@@ -1,0 +1,29 @@
+#pragma once
+
+#include <irrlicht/irrlicht.h>
+
+#include "defines.hh"
+
+class EventReceiver : public irr::IEventReceiver, public irr::IReferenceCounted
+{
+public:
+
+	bool OnEvent(const irr::SEvent& event);
+
+	bool keyDown(irr::EKEY_CODE code);
+
+	bool inputDown(E_INPUT input);
+
+	EventReceiver(class Core *core);
+
+	~EventReceiver() { }
+
+private:
+
+	void handleEvent(irr::EKEY_CODE key, bool prev, bool now);
+
+	bool keys[irr::KEY_KEY_CODES_COUNT];
+
+	class Core *core;
+};
+
