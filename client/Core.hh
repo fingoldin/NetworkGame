@@ -7,6 +7,7 @@
 #include "EventReceiver.hh"
 #include "NodeManager.hh"
 #include "Network.hh"
+#include "Camera.hh"
 
 class Core : public irr::IReferenceCounted
 {
@@ -30,6 +31,7 @@ public:
 
 	inline NodeManager *getNodeManager() const { return node_manager; }
 	inline EventReceiver *getEventReceiver() const { return event_receiver; }
+	inline irr::gui::IGUIEnvironment *getGUIEnvironment() const { return device ? device->getGUIEnvironment() : NULL; }
 
 private:
 
@@ -44,6 +46,8 @@ private:
 	irr::gui::IGUIEnvironment * gui_env;
 	EventReceiver * event_receiver;
 	NodeManager *node_manager;
+
+	Camera *camera;
 
 	irr::SIrrlichtCreationParameters params;
 };

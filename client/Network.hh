@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pthread.h>
+#include <string>
 
 #include "defines.hh"
 
@@ -10,11 +11,11 @@ public:
 	static void init(class Core *core);
 	static void end();
 
-	static bool connect(const char *ip);
-	static bool connect(ip_t ip);
+	static std::string connect(const char *ip);
+	static std::string connect(ip_t ip);
 	static void disconnect();
 
-	static void sendInputData(E_INPUT input, bool state);
+	static void sendInputData();
 
 private:
 	Network() { }
@@ -23,12 +24,12 @@ private:
 	static void closeThread();
 	static void *threadLoop(void *args);
 
-	static ssize_t receivePacket(char *buf, size_t buf_len, ip_t *ip, bool nullTerminate);
-	static bool sendPacket(ip_t ip, char *buf, size_t buf_len);
+	static ssize_t receivePacket(unsigned char *buf, size_t buf_len, ip_t *ip, unsigned short *port, bool nullTerminate);
+	static bool sendPacket(ip_t ip, unsigned char *buf, size_t buf_len);
 
-	static bool addPlayer(playid_t pid, ip_t ip, bool owner);
+	static bool addPlayer(playid_t pid, bool owner);
 	static bool removePlayer(playid_t pid);
-	static void playerUpdate(playid_t pid, n_block_t x, n_block_t y);
+	static void playerUpdate(playid_t pid, double x, double y);
 
 	static bool socket_init;
 	static bool thread_running;

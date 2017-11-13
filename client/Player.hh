@@ -3,21 +3,22 @@
 #include <irrlicht/irrlicht.h>
 
 #include "CNode.hh"
+#include "Camera.hh"
 
 #include "defines.hh"
 
 class Player : public CNode
 {
 public:
-	Player(class NodeManager *manager, playid_t id, ip_t ip);
+	Player(class NodeManager *manager, playid_t id);
 
-	void update(double time);
+	void update(ms_t time);
 
-	void render(irr::video::IVideoDriver *driver);
+	void render(irr::video::IVideoDriver *driver, Camera *camera);
 
 	inline playid_t getID() const { return id; }
-	inline ip_t getIP() const { return ip; }
-	inline void setIP(ip_t i) { ip = i; }
+//	inline ip_t getIP() const { return ip; }
+//	inline void setIP(ip_t i) { ip = i; }
 
 //	const E_ANIM getAnim() { return anim; }
 //	const double getAnimPos() { return animPos; }
@@ -25,13 +26,13 @@ public:
 //	void setAnim(E_ANIM a);
 //	void setAnimPos(double p);
 
-private:
+protected:
 
 	playid_t id;
-	ip_t ip;
+//	ip_t ip;
 
 //	E_ANIM anim;
 //	double animPos;
 
-	double lastUpdateTime;
+	ms_t lastUpdateTime;
 };

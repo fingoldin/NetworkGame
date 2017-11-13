@@ -25,5 +25,10 @@ private:
 	bool keys[irr::KEY_KEY_CODES_COUNT];
 
 	class Core *core;
+
+	bool connect();
+
+        irr::gui::IGUIEditBox *edit_box;
+	irr::gui::IGUIEnvironment *env;
 };
 

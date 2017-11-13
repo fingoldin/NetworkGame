@@ -2,7 +2,7 @@
 
 #include "Timer.hh"
 
-Engine::Engine()
+Engine::Engine(const std::string& m) : map(m)
 {
 	lastID = 0;
 }
@@ -53,6 +53,17 @@ Player *Engine::getPlayerByID(playid_t id)
 			return players[i];
 
 	return NULL;
+}
+
+Player *Engine::getPlayerByIP(ip_t ip)
+{
+        size_t l = players.size();
+
+        for(size_t i = 0; i < l; i++)
+                if(players[i]->getIP() == ip)
+                        return players[i];
+
+        return NULL;
 }
 
 playid_t Engine::nextID()

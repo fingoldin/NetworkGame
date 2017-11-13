@@ -1,6 +1,6 @@
 #include "Player.hh"
 
-Player::Player(playid_t id, ip_t ip) : id(id), ip(ip), lastUpdateTime(-1.0), x_pos(0.0), y_pos(0.0), changed(true)
+Player::Player(playid_t id, ip_t ip) : id(id), ip(ip), lastUpdateTime(-1.0), x_pos(0.0), y_pos(0.0), changed(true), lastSignalTime(0)
 {
 }
 
@@ -15,6 +15,11 @@ void Player::update(double time)
 		setX(x_pos - PLAYER_MOVE_SPEED * dt);
 	if(inputs[EI_RIGHT])
 		setX(x_pos + PLAYER_MOVE_SPEED * dt);
+
+	if(inputs[EI_UP])
+                setY(y_pos + PLAYER_MOVE_SPEED * dt);
+        if(inputs[EI_DOWN])
+                setY(y_pos - PLAYER_MOVE_SPEED * dt);
 
 	lastUpdateTime = time;
 }

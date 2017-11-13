@@ -17,6 +17,7 @@ Core::Core() : irr::IReferenceCounted()
 	gui_env = NULL;
 	node_manager = NULL;
 	event_receiver = NULL;
+	camera = NULL;
 }
 
 void Core::begin(const char * winName)
@@ -30,7 +31,9 @@ void Core::end(void)
 		node_manager->drop();
         if(event_receiver)
                 event_receiver->drop();
-        if(device)
+        if(camera)
+		camera->drop();
+	if(device)
                 device->drop();
 }
 
@@ -54,7 +57,6 @@ void Core::update(void)
         device->setWindowCaption(irr::core::stringw(win_name + "  FPS: " + irr::core::stringc(driver->getFPS())).c_str());
 
         irr::core::stringw FPS = irr::core::stringw(driver->getFPS());
-        gui_env->addStaticText(FPS.c_str(), irr::core::rect<irr::s32>(10, 10, FPS.size() * 20, 30), true);
 
 	double time = std::chrono::system_clock::now().time_since_epoch().count();
 
@@ -69,7 +71,7 @@ void Core::render(void)
 {
         driver->beginScene(true, true, irr::video::SColor(0, 0, 0, 0));
 
-	node_manager->renderAll(driver);
+	node_manager->renderAll(driver, camera);
 
         gui_env->drawAll();
 
@@ -102,6 +104,8 @@ void Core::init_device(const char * winName)
         device->setEventReceiver(event_receiver);
 
 	node_manager = new NodeManager();
+
+	camera = new Camera(node_manager, irr::core::position2df(0.0, 0.0), VIEWPORT_MAX);
 
 	Network::init(this);
 }

@@ -23,6 +23,9 @@ public:
 	inline bool hasChanged() const { return changed; }
 	inline void setHasChanged(bool s) { changed = s; }
 
+	void setLastSignalTime(ms_t t) { if(t > lastSignalTime) lastSignalTime = t; }
+	inline ms_t getLastSignalTime() const { return lastSignalTime; }
+
 //	const E_ANIM getAnim() { return anim; }
 //	const double getAnimPos() { return animPos; }
 
@@ -45,4 +48,6 @@ private:
 	double y_pos;
 
 	bool changed;
+
+	ms_t lastSignalTime;
 };

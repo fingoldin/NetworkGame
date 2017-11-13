@@ -2,14 +2,17 @@
 
 #include "NodeManager.hh"
 
-Player::Player(NodeManager *manager, playid_t id, ip_t ip) : CNode(manager), id(id), ip(ip), lastUpdateTime(-1.0)
-{
+#include "Camera.hh"
 
+Player::Player(NodeManager *manager, playid_t id) : CNode(manager), id(id), lastUpdateTime(0)
+{
+	visible = true;
+	box.set(PLAYER_WIDTH, PLAYER_HEIGHT);
 }
 
-void Player::update(double time)
+void Player::update(ms_t time)
 {
-	if(lastUpdateTime == -1.0)
+	if(lastUpdateTime == 0)
 		lastUpdateTime = time;
 
 //	irr::u32 dt = time - lastUpdateTime;
@@ -17,11 +20,20 @@ void Player::update(double time)
 	lastUpdateTime = time;
 }
 
-void Player::render(irr::video::IVideoDriver *driver)
+void Player::render(irr::video::IVideoDriver *driver, Camera *camera)
 {
-	if(driver) {
-		driver->draw2DRectangle(irr::video::SColor(255,255,255,255),
-		irr::core::rect<irr::s32>(METERS_TO_PIXELS * pos.X - 20, METERS_TO_PIXELS * pos.Y - 20,
-		METERS_TO_PIXELS * pos.X + 20, METERS_TO_PIXELS * pos.Y + 20));
+//	printf("%f %f\n", pos.X, pos.Y);
+
+	if(driver && camera) {
+		irr::core::position2d<irr::f32> cpos = camera->getPos();
+		irr::core::dimension2d<irr::f32> viewport = camera->getViewport();
+
+		irr::s32 x1 = CORE_WINDOW_WIDTH / 2 + (irr::f32)CORE_WINDOW_WIDTH * (pos.X - box.Width - cpos.X) / viewport.Width;
+		irr::s32 x2 = CORE_WINDOW_WIDTH / 2 + (irr::f32)CORE_WINDOW_WIDTH * (pos.X + box.Width - cpos.X) / viewport.Width;
+
+		irr::s32 y1 = CORE_WINDOW_HEIGHT / 2 - (irr::f32)CORE_WINDOW_HEIGHT * (pos.Y + box.Height - cpos.Y) / viewport.Height;
+		irr::s32 y2 = CORE_WINDOW_HEIGHT / 2 - (irr::f32)CORE_WINDOW_HEIGHT * (pos.Y - box.Height - cpos.Y) / viewport.Height;
+
+		driver->draw2DRectangle(irr::video::SColor(255, 55, 55, 255), irr::core::rect<irr::s32>(x1, y1, x2, y2));
 	}
 }

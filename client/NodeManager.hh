@@ -3,9 +3,11 @@
 #include <irrlicht/irrlicht.h>
 
 #include <vector>
+#include <string>
 
 #include "CNode.hh"
 #include "Player.hh"
+#include "Camera.hh"
 
 class NodeManager : public irr::IReferenceCounted
 {
@@ -14,16 +16,22 @@ public:
 	~NodeManager();
 
 	void updateAll(double time);
-	void renderAll(irr::video::IVideoDriver *driver);
+	void renderAll(irr::video::IVideoDriver *driver, Camera *camera);
 
 	void addNode(CNode *node);
 	bool removeNode(CNode *node);
 
-	bool addPlayer(playid_t pid, ip_t ip, bool owner);
+	void clearNodes();
+
+	bool addPlayer(playid_t pid, bool owner);
 	bool removePlayer(playid_t pid);
 
 	Player *getPlayerByID(playid_t id) const;
 	inline Player *getLocalPlayer() const { return localPlayer; }
+
+	inline const std::vector<Player*>& getPlayers() const { return players; }
+
+	bool loadMap(const std::string& path);
 
 private:
 

@@ -6,11 +6,11 @@ int main(int argc, char * argv[])
 
 	core.begin("Irrlicht");
 
-	if(!Network::connect("127.0.0.1")) {
+/*	if(!Network::connect("127.0.0.1")) {
 		printf("Could not connect\n");
 		return 1;
 	}
-
+*/
 	while(core.run())
 	{
 		if(core.active()) {
@@ -22,6 +22,8 @@ int main(int argc, char * argv[])
 			core.yield();
 		}
 	}
+
+	Network::disconnect();
 
 	core.end();
 

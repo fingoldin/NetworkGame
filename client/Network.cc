@@ -4,8 +4,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <string.h>
 #include <chrono>
+#include <algorithm>
 
 #include "Network.hh"
 
@@ -14,6 +14,8 @@
 #include "EventReceiver.hh"
 
 #include "Timer.hh"
+
+#include "pack2.hh"
 
 bool Network::socket_init = false;
 bool Network::thread_running = false;
@@ -84,6 +86,8 @@ bool Network::initThread()
 		return false;
 	}
 
+	printf("Created network thread\n");
+
 	return true;
 }
 
@@ -98,6 +102,8 @@ void Network::closeThread()
 
 void *Network::threadLoop(void *args)
 {
+	printf("Begun thread\n");
+
 	if(!connected || !server_ip) {
 		thread_running = false;
 		pthread_exit(NULL);
@@ -105,50 +111,127 @@ void *Network::threadLoop(void *args)
 
 	thread_running = true;
 
-	char buf[RECEIVE_LEN];
+	unsigned char buf[RECEIVE_LEN];
 	ip_t ip;
+	unsigned short port;
 
 	size_t s_len = strlen(UPDATE_SIG);
 	size_t cs_len = strlen(CONNECT_SIG);
 	size_t ds_len = strlen(DISCONNECT_SIG);
-        size_t id_len = sizeof(playid_t);
-        size_t b_len = sizeof(n_block_t);
+	size_t pss_len = strlen(PLAYERS_SEND_SIG);
+        size_t id_len = 2;
+        size_t b_len = 4;
 
 	bool firstLoop = true;
 	ms_t last_time;
 
+	ms_t lastServerMesTime = Timer::getMs();
+
+	printf("Thread should run: %d\n", (int)thread_should_run);
+
 	while(thread_should_run)
 	{
-		ssize_t r = receivePacket(buf, RECEIVE_LEN, &ip, false);
+		printf("Thread running\n");
+		ssize_t r = receivePacket(buf, RECEIVE_LEN, &ip, &port, false);
 
 //		if(r > -1)
 //			printf("%ld bytes received\n", r);
 
-		if(ip == server_ip)
+		if(ip == server_ip && port == SERVER_PORT)
 		{
 			if((size_t)r >= (s_len + id_len + 2 * b_len))
 			{
 				if(strncmp((const char*)buf, UPDATE_SIG, s_len) == 0) {
-					playid_t pid = *(playid_t*)&buf[s_len];
-					n_block_t x = *(n_block_t*)&buf[s_len + id_len];
-					n_block_t y = *(n_block_t*)&buf[s_len + id_len + b_len];
+					//playid_t pid = *(playid_t*)&buf[s_len];
+					//n_block_t x = *(n_block_t*)&buf[s_len + id_len];
+					//n_block_t y = *(n_block_t*)&buf[s_len + id_len + b_len];
+
+					playid_t pid;
+					double x, y;
+
+					unpack(buf + s_len, "Hdd", &pid, &x, &y);
 
 					playerUpdate(pid, x, y);
+
+					lastServerMesTime = Timer::getMs();
+
+					printf("Update: %f %f\n", x, y);
 				}
 			}
-			else if((size_t)r == (cs_len + id_len + 2 * b_len) && strncmp(buf, CONNECT_SIG, cs_len) == 0) {
-                                playid_t pid = *(playid_t*)&buf[cs_len];
-                                n_block_t x = *(n_block_t*)&buf[cs_len + id_len];
-                                n_block_t y = *(n_block_t*)&buf[cs_len + id_len + b_len];
+			else if((size_t)r == (cs_len + id_len + 2 * b_len) && strncmp((const char*)buf, CONNECT_SIG, cs_len) == 0) {
+                                //playid_t pid = *(playid_t*)&buf[cs_len];
+                                //n_block_t x = *(n_block_t*)&buf[cs_len + id_len];
+                                //n_block_t y = *(n_block_t*)&buf[cs_len + id_len + b_len];
 
-                               	if(addPlayer(pid, ip, false))
+				playid_t pid;
+				double x, y;
+
+				unpack(buf + cs_len, "Hdd", &pid, &x, &y);
+
+                               	if(addPlayer(pid, false))
 	                               	playerUpdate(pid, (irr::f32)x, (irr::f32)y);
+
+				lastServerMesTime = Timer::getMs();
 			}
-			else if((size_t)r == (ds_len + id_len) && strncmp(buf, DISCONNECT_SIG, ds_len) == 0) {
-                                playid_t pid = *(playid_t*)&buf[ds_len];
+			else if((size_t)r == (ds_len + id_len) && strncmp((const char*)buf, DISCONNECT_SIG, ds_len) == 0) {
+				playid_t pid;
+
+				unpack(buf + ds_len, "H", &pid);
 
                                 removePlayer(pid);
+
+				lastServerMesTime = Timer::getMs();
                         }
+			else if((size_t)r >= (pss_len) && (r - pss_len) % id_len == 0 && strncmp((const char*)buf, PLAYERS_SEND_SIG, pss_len) == 0) {
+				size_t nids = std::min((r - pss_len) / id_len, (RECEIVE_LEN - pss_len) / id_len);
+				playid_t *ids = (playid_t*)malloc(nids);
+
+				NodeManager *m = core->getNodeManager();
+
+				if(m)
+				{
+					for(size_t i = 0; i < nids; i++)
+                                                unpack(buf + pss_len + id_len * i, "H", &ids[i]);
+
+					//printf("%ld ids\n", nids);
+
+					std::vector<Player*> players = m->getPlayers();
+					size_t pl = players.size();
+
+					std::vector<playid_t> toremove;
+
+					for(size_t i = 0; i < pl; i++) {
+						playid_t thisid = players[i]->getID();
+
+						bool exists = false;
+
+						for(size_t j = 0; j < nids; j++) {
+							if(ids[j] == thisid) {
+								exists = true;
+								break;
+							}
+						}
+
+						if(!exists)
+							toremove.push_back(thisid);
+					}
+
+					size_t trl = toremove.size();
+
+					for(size_t i = 0; i < trl; i++)
+						removePlayer(toremove[i]);
+
+					for(size_t i = 0; i < nids; i++)
+                                                if(!m->getPlayerByID(ids[i]))
+                                                        addPlayer(ids[i], false);
+
+					lastServerMesTime = Timer::getMs();
+
+					//printf("Received all player info: %.*s\n", (int)r, buf);
+				}
+			}
+			else
+				printf("Unrecognized packet received: %.*s\n", (int)r, buf);
 		}
 
 		if(firstLoop) {
@@ -163,12 +246,19 @@ void *Network::threadLoop(void *args)
 			if(dt > SEND_ALL_TIME) {
 				last_time = time;
 
-				EventReceiver *r = core->getEventReceiver();
+				sendInputData();
+			}
 
-				if(r) {
-					for(int input = 0; input < EI_COUNT; input++)
-						sendInputData((E_INPUT)input, r->inputDown((E_INPUT)input));
-				}
+			ms_t dtServer = time - lastServerMesTime;
+
+			if(dtServer > SERVER_TIMEOUT_TIME) {
+				thread_running = false;
+
+				disconnect();
+
+				printf("Lost connection with server (timed out)\n");
+
+				break;
 			}
 		}
 	}
@@ -178,7 +268,7 @@ void *Network::threadLoop(void *args)
 	pthread_exit(NULL);
 }
 
-ssize_t Network::receivePacket(char *buf, size_t buf_len, ip_t *ip, bool nullTerminate=false)
+ssize_t Network::receivePacket(unsigned char *buf, size_t buf_len, ip_t *ip, unsigned short *port, bool nullTerminate=false)
 {
 	if(!socket_init)
 		return -1;
@@ -199,6 +289,7 @@ ssize_t Network::receivePacket(char *buf, size_t buf_len, ip_t *ip, bool nullTer
 			buf[len] = '\0';
 
 		*ip = remote_addr.sin_addr.s_addr;
+		*port = ntohs(remote_addr.sin_port);
 
 		return recvlen;
 	}
@@ -206,7 +297,7 @@ ssize_t Network::receivePacket(char *buf, size_t buf_len, ip_t *ip, bool nullTer
 	return -1;
 }
 
-bool Network::sendPacket(ip_t ip, char *buf, size_t buf_len)
+bool Network::sendPacket(ip_t ip, unsigned char *buf, size_t buf_len)
 {
 	if(!socket_init)
 		return false;
@@ -220,67 +311,88 @@ bool Network::sendPacket(ip_t ip, char *buf, size_t buf_len)
         return (sendto(n_fd, buf, buf_len, 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) > -1);
 }
 
-bool Network::connect(ip_t ip)
+std::string Network::connect(ip_t ip)
 {
 	if(!socket_init)
-		return false;
+		return "";
 
 	if(connected)
 		disconnect();
 
-	sendPacket(ip, (char*)CONNECT_MES, strlen(CONNECT_MES));
-
-	char buf[RECEIVE_LEN];
+	unsigned char buf[RECEIVE_LEN];
 	ip_t s_ip;
+	unsigned short port;
 
 	ssize_t r;
 
-	int i = 0;
-
 	size_t sig_l = strlen(YOU_CONNECT_SIG);
-	size_t b_l = sizeof(n_block_t);
-	size_t i_len = sizeof(playid_t);
+	size_t b_l = 4;
+	size_t i_len = 2;
+
+	ms_t startMs = Timer::getMs();
+
+	std::string map = "";
 
 	while(true)
 	{
-		if((r = receivePacket(buf, RECEIVE_LEN, &s_ip, false)) > 0) {
-			if((size_t)r == (sig_l + i_len + 2 * b_l) && s_ip == ip && strncmp(buf, YOU_CONNECT_SIG, sig_l) == 0) {
+		sendPacket(ip, (unsigned char*)CONNECT_MES, strlen(CONNECT_MES));
+
+		if((r = receivePacket(buf, RECEIVE_LEN, &s_ip, &port, false)) > 0) {
+			if((size_t)r > (sig_l + i_len + 2 * b_l) && s_ip == ip && port == SERVER_PORT && strncmp((char*)buf, YOU_CONNECT_SIG, sig_l) == 0) {
+				connected = true;
+				server_ip = ip;
 				if(initThread()) {
-					connected = true;
+					//playid_t pid = *(playid_t*)&buf[sig_l];
+					//n_block_t x = *(n_block_t*)&buf[sig_l + i_len];
+					//n_block_t y = *(n_block_t*)&buf[sig_l + i_len + b_l];
 
-					playid_t pid = *(playid_t*)&buf[sig_l];
-					n_block_t x = *(n_block_t*)&buf[sig_l + i_len];
-					n_block_t y = *(n_block_t*)&buf[sig_l + i_len + b_l];
+					playid_t pid;
+					double x, y;
 
-					server_ip = ip;
+					unpack(buf + sig_l, "Hdd", &pid, &x, &y);
 
-					addPlayer(pid, ip, true);
+					map.reserve(r - sig_l - i_len - 2 * b_l);
+
+					char *temp = (char*)malloc(r - sig_l - i_len - 2 * b_l + 1);
+					strncpy(temp, (char*)(buf + sig_l + i_len + 2 * b_l), r - sig_l - i_len - 2 * b_l);
+
+					map += temp;
+					map += ".map";
+
+					free(temp);
+
+					printf("Map file: %s\n", map.c_str());
+					//printf("You connect packet: %.*s\n", r, buf);
+
+					addPlayer(pid, true);
 					playerUpdate(pid, (irr::f32)x, (irr::f32)y);
+
 					break;
 				}
 				else {
 					disconnect();
+					server_ip = 0;
 					connected = false;
 					break;
 				}
 			}
 		}
 
-		if(i++ > CONNECT_TIMEOUT_TIME / USLEEP_TIME)
+		if((Timer::getMs() - startMs) > CONNECT_TIMEOUT_TIME)
 			break;
-
-		usleep(USLEEP_TIME);
+		else
+			usleep(USLEEP_TIME);
 	}
 
-	return connected;
+	return map;
 }
 
-bool Network::connect(const char *ip)
+std::string Network::connect(const char *ip)
 {
 	struct sockaddr_in serv_addr;
 
 	if(inet_pton(AF_INET, ip, &serv_addr.sin_addr) < 1)
-		return false;
+		return "";
 
 	return connect((ip_t)serv_addr.sin_addr.s_addr);
 }
@@ -297,30 +409,61 @@ void Network::disconnect()
 
 		if(p) {
 			size_t dm_len = strlen(DISCONNECT_MES);
-			size_t i_len = sizeof(playid_t);
+			size_t sig_l = strlen(YOU_DISCONNECT_SIG);
+			size_t i_len = 2;
 
-			char buf[dm_len + i_len];
+			unsigned char buf[dm_len + i_len];
 
-			strcpy(buf, DISCONNECT_MES);
-			*(playid_t*)&buf[dm_len] = p->getID();
+			strcpy((char*)buf, DISCONNECT_MES);
+			//*(playid_t*)&buf[dm_len] = p->getID();
+			pack(buf + dm_len, "H", p->getID());
 
-			removePlayer(p->getID());
+			ms_t startMs = Timer::getMs();
 
-			for(int i = 0; i < DISCONNECT_MES_NUM; i++)
+			unsigned char r_buf[RECEIVE_LEN];
+			ip_t r_ip;
+			unsigned short port;
+
+			while(true)
+			{
+				//for(int i = 0; i < DISCONNECT_MES_NUM; i++)
 				sendPacket(server_ip, buf, dm_len + i_len);
 
+				size_t r = -1;
+
+				if((r = receivePacket(r_buf, RECEIVE_LEN, &r_ip, &port, true)) > 0) {
+					if((size_t)r == (sig_l + i_len) && r_ip == server_ip && port == SERVER_PORT && strncmp((char*)r_buf, YOU_DISCONNECT_SIG, sig_l) == 0) {
+						playid_t id;
+
+						unpack(r_buf + sig_l, "H", &id);
+
+						if(id == p->getID())
+							break;
+					}
+				}
+
+				if((Timer::getMs() - startMs) > DISCONNECT_WAIT_TIME) {
+					printf("Disconnect timeout\n");
+                        		break;
+				}
+                		else
+                        		usleep(USLEEP_TIME);
+			}
+
+			m->clearNodes();
 		}
 	}
 
+	server_ip = 0;
 	connected = false;
 }
 
-bool Network::addPlayer(playid_t pid, ip_t ip, bool owner)
+bool Network::addPlayer(playid_t pid, bool owner)
 {
 	NodeManager *m = core->getNodeManager();
 
         if(m)
-		return m->addPlayer(pid, ip, owner);
+		return m->addPlayer(pid, owner);
 
 	return false;
 }
@@ -335,7 +478,7 @@ bool Network::removePlayer(playid_t pid)
 	return false;
 }
 
-void Network::playerUpdate(playid_t pid, n_block_t x, n_block_t y)
+void Network::playerUpdate(playid_t pid, double x, double y)
 {
 	NodeManager *m = core->getNodeManager();
 
@@ -346,11 +489,18 @@ void Network::playerUpdate(playid_t pid, n_block_t x, n_block_t y)
 
         if(p)
                 p->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
+	else {
+		addPlayer(pid, false);
+		Player *np = m->getPlayerByID(pid);
 
-	printf("Player update: %d %f %f\n", pid, x, y);
+		if(np)
+			np->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
+	}
+
+	//printf("Player update: %d %f %f\n", pid, x, y);
 }
 
-void Network::sendInputData(E_INPUT input, bool state)
+void Network::sendInputData()
 {
 	NodeManager *m = core->getNodeManager();
 	Player *p = NULL;
@@ -358,20 +508,31 @@ void Network::sendInputData(E_INPUT input, bool state)
 	if(m)
 		p = m->getLocalPlayer();
 
+	EventReceiver *e = core->getEventReceiver();
 
-	if(!m || !p || !server_ip)
+	if(!m || !p || !server_ip || !e)
 		return;
 
 	size_t m_len = strlen(UPDATE_MES);
-	size_t i_len = sizeof(playid_t);
-	size_t buf_len = m_len + i_len + 2;
+	size_t i_len = 2;
+	size_t buf_len = m_len + i_len + 1;
 
-	char buf[buf_len];
+	unsigned char buf[buf_len];
 
-	strcpy(buf, UPDATE_MES);
-	*(playid_t*)&buf[m_len] = p->getID();
-	buf[m_len + i_len] = (char)input;
-	buf[m_len + i_len + 1] = (char)state;
+	strcpy((char*)buf, UPDATE_MES);
+	//*(playid_t*)&buf[m_len] = p->getID();
+	//buf[m_len + i_len] = (char)input;
+	//buf[m_len + i_len + 1] = (char)state;
 
+	uint8_t inputs = 0;
+
+	for(int i = 0; i < EI_COUNT; i++) {
+		inputs <<= 1;
+		inputs |= (uint8_t)e->inputDown((E_INPUT)i);
+	}
+
+	pack(buf + m_len, "HC", p->getID(), inputs);
+
+	printf("Sent output packet\n");
 	sendPacket(server_ip, buf, buf_len);
 }

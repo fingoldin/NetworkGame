@@ -22,8 +22,8 @@ private:
 
 	static void *threadLoop(void *args);
 
-	static ssize_t receivePacket(char *buf, size_t buf_len, ip_t *ip, bool nullTerminate);
-	static bool sendPacket(ip_t ip, char *buf, size_t buf_len);
+	static ssize_t receivePacket(unsigned char *buf, size_t buf_len, ip_t *ip, unsigned short *port, bool nullTerminate);
+	static bool sendPacket(ip_t ip, unsigned char *buf, size_t buf_len);
 
 	static bool socket_init;
 	static bool thread_running;

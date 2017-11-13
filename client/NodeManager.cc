@@ -1,4 +1,10 @@
+#include <string>
+#include <sstream>
+#include <fstream>
+
 #include "NodeManager.hh"
+
+#include "Platform.hh"
 
 NodeManager::NodeManager() : irr::IReferenceCounted()
 {
@@ -26,16 +32,47 @@ void NodeManager::updateAll(double time)
 {
 	size_t l = nodes.size();
 
+	std::vector<CNode*> firstNodes, lastNodes, anyNodes;
+
+	for(size_t i = 0; i < l; i++) {
+		switch(nodes[i]->getUpdateFlag())
+		{
+		case EUF_FIRST:
+			firstNodes.push_back(nodes[i]);
+			break;
+		case EUF_LAST:
+			lastNodes.push_back(nodes[i]);
+			break;
+		case EUF_ANY:
+		default:
+			anyNodes.push_back(nodes[i]);
+			break;
+		};
+	}
+
+	l = firstNodes.size();
+
 	for(size_t i = 0; i < l; i++)
-		nodes[i]->update(time);
+		firstNodes[i]->update(time);
+
+	l = anyNodes.size();
+
+	for(size_t i = 0; i < l; i++)
+                anyNodes[i]->update(time);
+
+	l = lastNodes.size();
+
+	for(size_t i = 0; i < l; i++)
+                lastNodes[i]->update(time);
 }
 
-void NodeManager::renderAll(irr::video::IVideoDriver *driver)
+void NodeManager::renderAll(irr::video::IVideoDriver *driver, Camera *camera)
 {
 	size_t l = nodes.size();
 
 	for(size_t i = 0; i < l; i++)
-		nodes[i]->render(driver);
+		if(nodes[i]->shouldRender())
+			nodes[i]->render(driver, camera);
 }
 
 void NodeManager::addNode(CNode *node)
@@ -62,14 +99,19 @@ bool NodeManager::removeNode(CNode *node)
 	return false;
 }
 
-bool NodeManager::addPlayer(playid_t pid, ip_t ip, bool owner)
+void NodeManager::clearNodes()
+{
+	nodes.clear();
+}
+
+bool NodeManager::addPlayer(playid_t pid, bool owner)
 {
 	Player *p = NULL;
 
 	if((p = getPlayerByID(pid)))
 		return false;
 
-	p = new Player(this, pid, ip);
+	p = new Player(this, pid);
 
 	addNode(p);
 
@@ -119,4 +161,31 @@ Player *NodeManager::getPlayerByID(playid_t id) const
 			return players[i];
 
 	return NULL;
+}
+
+bool NodeManager::loadMap(const std::string& path)
+{
+	std::string p = std::string(MAP_DIR) + path;
+	std::ifstream infile(p.c_str());
+
+	if(!infile.is_open()) {
+		printf("Could not load map at path %s\n", p.c_str());
+		return false;
+	}
+
+	std::string line;
+	while (std::getline(infile, line))
+	{
+   		std::istringstream iss(line);
+    		irr::f32 x, y, w, h;
+
+    		if (!(iss >> x >> y >> w >> h))
+			break;
+
+		printf("%f %f %f %f read\n", x, y, w, h);
+
+		addNode(new Platform(this, irr::core::position2d<irr::f32>(x, y), irr::core::dimension2d<irr::f32>(w, h)));
+	}
+
+	return true;
 }
