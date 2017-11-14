@@ -262,6 +262,8 @@ void *Network::threadLoop(void *args)
 					sendPacket(p->getIP(), you_send_buf, ys_buf_len);
 
 				printf("Disconnect/Connect packet received: %s\n", (char*)buf);
+
+				sendData();
 			}
 			else
 				printf("Corrupt disconnect packet received: %s\n", (char*)buf);
@@ -424,8 +426,10 @@ void Network::sendData()
 
 			pack(buf + s_len, "Hdd", players[i]->getID(), players[i]->getX(), players[i]->getY());
 
-			printf("Sent update packet\n");
-			sendPacket(players[i]->getIP(), buf, buf_len);
+			printf("Sent update packet %d\n", players[i]->getID());
+
+			for(size_t j = 0; j < l; j++)
+				sendPacket(players[j]->getIP(), buf, buf_len);
 
 			players[i]->setHasChanged(false);
 		}

@@ -25,7 +25,8 @@ NodeManager::~NodeManager()
 
         players.clear();
 
-	localPlayer->drop();
+	if(localPlayer)
+		localPlayer->drop();
 }
 
 void NodeManager::updateAll(double time)
@@ -70,6 +71,8 @@ void NodeManager::renderAll(irr::video::IVideoDriver *driver, Camera *camera)
 {
 	size_t l = nodes.size();
 
+//	printf("%ld\n", l);
+
 	for(size_t i = 0; i < l; i++)
 		if(nodes[i]->shouldRender())
 			nodes[i]->render(driver, camera);
@@ -92,6 +95,8 @@ bool NodeManager::removeNode(CNode *node)
 
 			nodes.erase(nodes.begin() + i);
 
+			//printf("Removed node: %ld\n", nodes.size());
+
 			return true;
 		}
 	}
@@ -101,7 +106,21 @@ bool NodeManager::removeNode(CNode *node)
 
 void NodeManager::clearNodes()
 {
+	if(localPlayer) {
+		localPlayer->drop();
+		localPlayer = NULL;
+	}
+
+	size_t l = nodes.size();
+	for(size_t i = 0; i < l; i++)
+		nodes[i]->drop();
+
+	l = players.size();
+        for(size_t i = 0; i < l; i++)
+                players[i]->drop();
+
 	nodes.clear();
+	players.clear();
 }
 
 bool NodeManager::addPlayer(playid_t pid, bool owner)
@@ -126,7 +145,7 @@ bool NodeManager::addPlayer(playid_t pid, bool owner)
 		p->grab();
 	}
 
-	printf("Player added, id: %d  local: %d\n", pid, (int)owner);
+	printf("Player added, id: %d  local: %d, total: %ld\n", pid, (int)owner, nodes.size());
 
 	return true;
 }
@@ -135,15 +154,23 @@ bool NodeManager::removePlayer(playid_t id)
 {
 	size_t l = players.size();
 
+	//printf("Remove player\n");
+
         for(size_t i = 0; i < l; i++) {
                 if(players[i]->getID() == id) {
 			if(players[i] == localPlayer)
 				localPlayer = NULL;
 
+			//printf("Removed player\n");
+
 			removeNode(players[i]);
+
+//			players[i]->setVisible(false);
 
 			players[i]->drop();
 			players.erase(players.begin() + i);
+
+			printf("Removed playe, id: %d\n", id);
 
 			return true;
 		}

@@ -131,7 +131,7 @@ void *Network::threadLoop(void *args)
 
 	while(thread_should_run)
 	{
-		printf("Thread running\n");
+		//printf("Thread running\n");
 		ssize_t r = receivePacket(buf, RECEIVE_LEN, &ip, &port, false);
 
 //		if(r > -1)
@@ -155,7 +155,7 @@ void *Network::threadLoop(void *args)
 
 					lastServerMesTime = Timer::getMs();
 
-					printf("Update: %f %f\n", x, y);
+					//printf("Update: %d %f %f\n", pid, x, y);
 				}
 			}
 			else if((size_t)r == (cs_len + id_len + 2 * b_len) && strncmp((const char*)buf, CONNECT_SIG, cs_len) == 0) {
@@ -177,6 +177,8 @@ void *Network::threadLoop(void *args)
 				playid_t pid;
 
 				unpack(buf + ds_len, "H", &pid);
+
+				printf("Disconnect %d\n", pid);
 
                                 removePlayer(pid);
 
@@ -227,7 +229,7 @@ void *Network::threadLoop(void *args)
 
 					lastServerMesTime = Timer::getMs();
 
-					//printf("Received all player info: %.*s\n", (int)r, buf);
+					printf("Received all player info: %ld removed\n", trl);
 				}
 			}
 			else
@@ -533,6 +535,6 @@ void Network::sendInputData()
 
 	pack(buf + m_len, "HC", p->getID(), inputs);
 
-	printf("Sent output packet\n");
+	//printf("Sent output packet\n");
 	sendPacket(server_ip, buf, buf_len);
 }
