@@ -13,6 +13,7 @@
 #define CONNECT_TIMEOUT_TIME  6000000        // us
 #define PLAYERS_SEND_TIME     1000           // ms
 #define PLAYER_TIMEOUT_TIME   4000           // ms
+#define PLAYER_SEND_TIME      700            // ms
 
 #define CONNECT_SIG           "$N^n"
 #define YOU_CONNECT_SIG       "dfgg"

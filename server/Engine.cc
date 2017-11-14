@@ -79,4 +79,6 @@ void Engine::update()
 
 	for(size_t i = 0; i < l; i++)
 		players[i]->update(time);
+
+	printf("Num players: %ld\n", players.size());
 }

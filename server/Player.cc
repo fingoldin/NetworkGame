@@ -1,10 +1,10 @@
 #include "Player.hh"
 
-Player::Player(playid_t id, ip_t ip) : id(id), ip(ip), lastUpdateTime(-1.0), x_pos(0.0), y_pos(0.0), changed(true), lastSignalTime(0)
+Player::Player(playid_t id, ip_t ip) : id(id), ip(ip), lastUpdateTime(-1.0), x_pos(0.0), y_pos(0.0), changed(true), lastSignalTime(0), lastSendTime(0)
 {
 }
 
-void Player::update(double time)
+void Player::update(ms_t time)
 {
 	if(lastUpdateTime == -1.0)
 		lastUpdateTime = time;

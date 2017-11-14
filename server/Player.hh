@@ -7,7 +7,7 @@ class Player
 public:
 	Player(playid_t id, ip_t ip);
 
-	void update(double time);
+	void update(ms_t time);
 
 	const playid_t getID() { return id; }
 	const ip_t getIP() { return ip; }
@@ -26,6 +26,9 @@ public:
 	void setLastSignalTime(ms_t t) { if(t > lastSignalTime) lastSignalTime = t; }
 	inline ms_t getLastSignalTime() const { return lastSignalTime; }
 
+	void setLastSendTime(ms_t t) { if(t > lastSendTime) lastSendTime = t; }
+        inline ms_t getLastSendTime() const { return lastSendTime; }
+
 //	const E_ANIM getAnim() { return anim; }
 //	const double getAnimPos() { return animPos; }
 
@@ -42,7 +45,7 @@ private:
 //	E_ANIM anim;
 //	double animPos;
 
-	double lastUpdateTime;
+	ms_t lastUpdateTime;
 
 	double x_pos;
 	double y_pos;
@@ -50,4 +53,5 @@ private:
 	bool changed;
 
 	ms_t lastSignalTime;
+	ms_t lastSendTime;
 };

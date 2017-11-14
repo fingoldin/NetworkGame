@@ -418,11 +418,15 @@ void Network::sendData()
 
 	strcpy((char*)buf, UPDATE_SIG);
 
+	ms_t time = Timer::getMs();
+
 	for(size_t i = 0; i < l; i++) {
-		if(players[i]->hasChanged()) {
+		if(players[i]->hasChanged() || (time - players[i]->getLastSendTime()) > PLAYER_SEND_TIME) {
 			//(playid_t*)&buf[s_len] = players[i]->getID();
 			//(n_block_t*)&buf[s_len + id_len] = (n_block_t)players[i]->getX();
 			//(n_block_t*)&buf[s_len + id_len + b_len] = (n_block_t)players[i]->getY();
+
+			players[i]->setLastSendTime(time);
 
 			pack(buf + s_len, "Hdd", players[i]->getID(), players[i]->getX(), players[i]->getY());
 
