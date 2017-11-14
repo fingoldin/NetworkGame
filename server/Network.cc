@@ -128,6 +128,8 @@ void *Network::threadLoop(void *args)
 		if((size_t)r == (um_len + i_len + 1) && strncmp((const char*)buf, UPDATE_MES, um_len) == 0) {
 //			playid_t id = *(playid_t*)&buf[um_len];
 
+			printf("Update received\n");
+
 			playid_t id;
 			uint8_t inputs;
 
@@ -178,6 +180,7 @@ void *Network::threadLoop(void *args)
 				// Connect message, player doesn't exist on server
 				if(!disconnect)
 				{
+					//engine->setThreadLock(true);
 					id = engine->addPlayer(ip, START_X, START_Y);
 
 					strcpy((char*)send_buf, CONNECT_SIG);
@@ -190,7 +193,7 @@ void *Network::threadLoop(void *args)
 
 					pack(you_send_buf + ycs_len, "Hdd", id, START_X, START_Y);
 					strcpy((char*)(you_send_buf + ycs_len + i_len + 2 * b_l), map.c_str());
-					ys_buf_len += strlen(map.c_str());
+					ys_buf_len += map.length();
 
 					//printf("%ld\n", strlen(map.c_str()));
 
@@ -211,7 +214,9 @@ void *Network::threadLoop(void *args)
 				pack(you_send_buf + ycs_len, "Hdd", id, p->getX(), p->getY());
 
 				strcpy((char*)(you_send_buf + ycs_len + i_len + 2 * b_l), map.c_str());
-				ys_buf_len += strlen(map.c_str());
+				ys_buf_len += map.length();
+
+				printf("Special message len: %ld (%ld)\n", ys_buf_len, map.length());
 
 				p->setLastSignalTime(time);
 			}
@@ -236,6 +241,7 @@ void *Network::threadLoop(void *args)
 
 					sendPacket(p->getIP(), you_send_buf, ys_buf_len);
 
+					//engine->setThreadLock(true);
 					engine->removePlayer(p->getID(), p->getIP());
 				}
 			}
@@ -259,11 +265,11 @@ void *Network::threadLoop(void *args)
 					}
 				}
 				else
-					sendPacket(p->getIP(), you_send_buf, ys_buf_len);
+					sendPacket(ip, you_send_buf, ys_buf_len);
 
 				printf("Disconnect/Connect packet received: %s\n", (char*)buf);
 
-				sendData();
+				//sendData();
 			}
 			else
 				printf("Corrupt disconnect packet received: %s\n", (char*)buf);
@@ -330,6 +336,7 @@ void *Network::threadLoop(void *args)
 				playid_t plid = players[i]->getID();
 				ip_t plip = players[i]->getIP();
 
+				//engine->setThreadLock(true);
 				if(engine->removePlayer(plid, plip)) {
 					unsigned char s_buf[yds_len + i_len];
 					unsigned char y_s_buf[yds_len + i_len];
@@ -406,6 +413,9 @@ bool Network::sendPacket(ip_t ip, unsigned char *buf, size_t buf_len)
 
 void Network::sendData()
 {
+	if(!socket_init)
+		return;
+
 	std::vector<Player*> players = engine->getPlayers();
 	size_t l = players.size();
 
@@ -420,7 +430,14 @@ void Network::sendData()
 
 	ms_t time = Timer::getMs();
 
+//	printf("Send begin\n");
+
 	for(size_t i = 0; i < l; i++) {
+//		if(engine->getThreadLock()) {
+//			engine->setThreadLock(false);
+//			break;
+//		}
+
 		if(players[i]->hasChanged() || (time - players[i]->getLastSendTime()) > PLAYER_SEND_TIME) {
 			//(playid_t*)&buf[s_len] = players[i]->getID();
 			//(n_block_t*)&buf[s_len + id_len] = (n_block_t)players[i]->getX();
@@ -430,7 +447,7 @@ void Network::sendData()
 
 			pack(buf + s_len, "Hdd", players[i]->getID(), players[i]->getX(), players[i]->getY());
 
-			printf("Sent update packet %d\n", players[i]->getID());
+			//printf("Sent update packet %d\n", players[i]->getID());
 
 			for(size_t j = 0; j < l; j++)
 				sendPacket(players[j]->getIP(), buf, buf_len);
@@ -438,4 +455,6 @@ void Network::sendData()
 			players[i]->setHasChanged(false);
 		}
 	}
+
+//	printf("Send end\n");
 }

@@ -17,8 +17,7 @@ bool EventReceiver::OnEvent(const irr::SEvent& event)
 			{
 			case irr::KEY_KEY_A:
 			case irr::KEY_KEY_D:
-			case irr::KEY_KEY_W:
-			case irr::KEY_KEY_S:
+			case irr::KEY_SPACE:
 				Network::sendInputData();
 				break;
 			default:
@@ -89,10 +88,8 @@ bool EventReceiver::inputDown(E_INPUT input)
 		return keyDown(irr::KEY_KEY_A);
 	case EI_RIGHT:
 		return keyDown(irr::KEY_KEY_D);
-	case EI_UP:
-		return keyDown(irr::KEY_KEY_W);
-	case EI_DOWN:
-		return keyDown(irr::KEY_KEY_S);
+	case EI_JUMP:
+		return keyDown(irr::KEY_SPACE);
 	default:
 		return false;
 	};

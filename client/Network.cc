@@ -151,6 +151,8 @@ void *Network::threadLoop(void *args)
 
 					unpack(buf + s_len, "Hdd", &pid, &x, &y);
 
+					printf("update\n");
+
 					playerUpdate(pid, x, y);
 
 					lastServerMesTime = Timer::getMs();
@@ -223,13 +225,13 @@ void *Network::threadLoop(void *args)
 					for(size_t i = 0; i < trl; i++)
 						removePlayer(toremove[i]);
 
-					for(size_t i = 0; i < nids; i++)
-                                                if(!m->getPlayerByID(ids[i]))
-                                                        addPlayer(ids[i], false);
+					//for(size_t i = 0; i < nids; i++)
+                                        //        if(!m->getPlayerByID(ids[i]))
+                                        //                addPlayer(ids[i], false);
 
 					lastServerMesTime = Timer::getMs();
 
-					printf("Received all player info: %ld removed\n", trl);
+					//printf("Received all player info: %ld removed\n", trl);
 				}
 			}
 			else
@@ -310,13 +312,17 @@ bool Network::sendPacket(ip_t ip, unsigned char *buf, size_t buf_len)
         dest_addr.sin_port = htons(SERVER_PORT);
         dest_addr.sin_addr.s_addr = ip;
 
+	printf("Send %s\n", buf);
+
         return (sendto(n_fd, buf, buf_len, 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) > -1);
 }
 
 std::string Network::connect(ip_t ip)
 {
-	if(!socket_init)
+	if(!socket_init || server_ip == ip) {
+		printf("Same ip\n");
 		return "";
+	}
 
 	if(connected)
 		disconnect();
@@ -343,31 +349,31 @@ std::string Network::connect(ip_t ip)
 			if((size_t)r > (sig_l + i_len + 2 * b_l) && s_ip == ip && port == SERVER_PORT && strncmp((char*)buf, YOU_CONNECT_SIG, sig_l) == 0) {
 				connected = true;
 				server_ip = ip;
+
+                                char *temp = (char*)malloc(r - sig_l - i_len - 2 * b_l + 1);
+                                strncpy(temp, (char*)(buf + sig_l + i_len + 2 * b_l), r - sig_l - i_len - 2 * b_l);
+				temp[r - sig_l - i_len - 2 * b_l] = '\0';
+
+                                map += temp;
+                                map += ".map";
+
+                                free(temp);
+
+				playid_t pid;
+                                double x, y;
+
+                                unpack(buf + sig_l, "Hdd", &pid, &x, &y, map);
+
+				addPlayer(pid, true);
+				playerUpdate(pid, (irr::f32)x, (irr::f32)y);
+
 				if(initThread()) {
 					//playid_t pid = *(playid_t*)&buf[sig_l];
 					//n_block_t x = *(n_block_t*)&buf[sig_l + i_len];
 					//n_block_t y = *(n_block_t*)&buf[sig_l + i_len + b_l];
 
-					playid_t pid;
-					double x, y;
-
-					unpack(buf + sig_l, "Hdd", &pid, &x, &y);
-
-					map.reserve(r - sig_l - i_len - 2 * b_l);
-
-					char *temp = (char*)malloc(r - sig_l - i_len - 2 * b_l + 1);
-					strncpy(temp, (char*)(buf + sig_l + i_len + 2 * b_l), r - sig_l - i_len - 2 * b_l);
-
-					map += temp;
-					map += ".map";
-
-					free(temp);
-
-					printf("Map file: %s\n", map.c_str());
+					printf("Map file: %s (%ld)\n", map.c_str(), r);
 					//printf("You connect packet: %.*s\n", r, buf);
-
-					addPlayer(pid, true);
-					playerUpdate(pid, (irr::f32)x, (irr::f32)y);
 
 					break;
 				}
@@ -375,6 +381,8 @@ std::string Network::connect(ip_t ip)
 					disconnect();
 					server_ip = 0;
 					connected = false;
+					removePlayer(pid);
+					map = "";
 					break;
 				}
 			}
@@ -433,6 +441,7 @@ void Network::disconnect()
 
 				size_t r = -1;
 
+				//printf("Send disconnect request\n");
 				if((r = receivePacket(r_buf, RECEIVE_LEN, &r_ip, &port, true)) > 0) {
 					if((size_t)r == (sig_l + i_len) && r_ip == server_ip && port == SERVER_PORT && strncmp((char*)r_buf, YOU_DISCONNECT_SIG, sig_l) == 0) {
 						playid_t id;

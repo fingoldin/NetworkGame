@@ -28,11 +28,28 @@
 #define UPDATE_MES            "sdf2"
 
 #define START_X               0.0
-#define START_Y               0.5
+#define START_Y               2.0
+
+#define PLAYER_SPEED          5.0
+#define PLAYER_ACC            20.0
+#define PLAYER_DECC           40.0
+#define PLAYER_AIR_SPEED      6.0
+#define PLAYER_AIR_ACC        16.0
+#define PLAYER_AIR_DECC       5.0
+#define PLAYER_JUMP_IMPULSE   6.5
+
+#define PLAYER_WIDTH          0.4
+#define PLAYER_HEIGHT         0.4
+#define PLAYER_GROUND         0.21
+
+#define GRAVITY               10.0
+
+#define IMMUNE_TIME           1000          // ms
 
 #define CONNECT_SEND_TIMES    4
 #define DISCONNECT_SEND_TIMES 4
 
+#define MAP_DIR               "./maps/"
 
 #define PLAYER_MOVE_SPEED     4.0
 
@@ -45,7 +62,6 @@ typedef unsigned long long    ms_t;
 enum E_INPUT {
         EI_LEFT = 0,
         EI_RIGHT,
-	EI_UP,
-	EI_DOWN,
+	EI_JUMP,
         EI_COUNT
 };

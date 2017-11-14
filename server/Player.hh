@@ -2,10 +2,12 @@
 
 #include "defines.hh"
 
+#include "Platform.hh"
+
 class Player
 {
 public:
-	Player(playid_t id, ip_t ip);
+	Player(class Engine *eng, playid_t id, ip_t ip);
 
 	void update(ms_t time);
 
@@ -35,9 +37,13 @@ public:
 //	void setAnim(E_ANIM a);
 //	void setAnimPos(double p);
 
-private:
+protected:
+
+	Platform *onGround();
 
 	bool inputs[EI_COUNT];
+
+	class Engine *eng;
 
 	playid_t id;
 	ip_t ip;
@@ -45,13 +51,14 @@ private:
 //	E_ANIM anim;
 //	double animPos;
 
-	ms_t lastUpdateTime;
-
-	double x_pos;
-	double y_pos;
+	double x_pos, y_pos, x_vel, y_vel;
 
 	bool changed;
 
+	ms_t lastUpdateTime;
 	ms_t lastSignalTime;
 	ms_t lastSendTime;
+	ms_t spawnTime;
+
+	bool lastJump;
 };

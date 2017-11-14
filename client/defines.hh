@@ -58,7 +58,6 @@ typedef unsigned long long    ms_t;
 enum E_INPUT {
 	EI_LEFT = 0,
 	EI_RIGHT,
-	EI_UP,
-	EI_DOWN,
+	EI_JUMP,
 	EI_COUNT
 };

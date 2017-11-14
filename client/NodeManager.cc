@@ -129,6 +129,8 @@ bool NodeManager::addPlayer(playid_t pid, bool owner)
 
 	if((p = getPlayerByID(pid)))
 		return false;
+	else
+		printf("Could not find player with id %d\n", pid);
 
 	p = new Player(this, pid);
 
@@ -145,7 +147,7 @@ bool NodeManager::addPlayer(playid_t pid, bool owner)
 		p->grab();
 	}
 
-	printf("Player added, id: %d  local: %d, total: %ld\n", pid, (int)owner, nodes.size());
+	printf("Player added, id: %d  local: %d, total: %ld\n", pid, (int)owner, players.size());
 
 	return true;
 }
