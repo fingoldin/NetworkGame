@@ -9,6 +9,8 @@
 
 #include "Network.hh"
 
+#include "Timer.hh"
+
 Core::Core() : irr::IReferenceCounted()
 {
 	win_name = "";
@@ -23,6 +25,8 @@ Core::Core() : irr::IReferenceCounted()
 void Core::begin(const char * winName)
 {
         init_device(winName);
+
+	Timer::init();
 }
 
 void Core::end(void)
@@ -58,13 +62,11 @@ void Core::update(void)
 
         irr::core::stringw FPS = irr::core::stringw(driver->getFPS());
 
-	double time = std::chrono::system_clock::now().time_since_epoch().count();
-
         if(event_receiver->keyDown(irr::KEY_ESCAPE)) {
                 device->closeDevice();
         }
 
-	node_manager->updateAll(time);
+	node_manager->updateAll(Timer::getMs());
 }
 
 void Core::render(void)

@@ -22,6 +22,8 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
+	printf("dt: %f\n", dt);
+
         //if((time - spawnTime) > IMMUNE_TIME) {
                 double speed = PLAYER_SPEED;
                 double acc = PLAYER_ACC;

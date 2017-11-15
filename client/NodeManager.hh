@@ -16,7 +16,7 @@ public:
 	NodeManager();
 	~NodeManager();
 
-	void updateAll(double time);
+	void updateAll(ms_t time);
 	void renderAll(irr::video::IVideoDriver *driver, Camera *camera);
 
 	void addNode(CNode *node);

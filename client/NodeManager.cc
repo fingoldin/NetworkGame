@@ -29,7 +29,7 @@ NodeManager::~NodeManager()
 		localPlayer->drop();
 }
 
-void NodeManager::updateAll(double time)
+void NodeManager::updateAll(ms_t time)
 {
 	size_t l = nodes.size();
 
@@ -172,7 +172,7 @@ bool NodeManager::removePlayer(playid_t id)
 			players[i]->drop();
 			players.erase(players.begin() + i);
 
-			printf("Removed playe, id: %d\n", id);
+			printf("Removed player, id: %d\n", id);
 
 			return true;
 		}
