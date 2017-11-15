@@ -36,17 +36,17 @@
 #define PLAYER_DECC           40.0
 #define PLAYER_AIR_SPEED      6.0
 #define PLAYER_AIR_ACC        16.0
-#define PLAYER_AIR_DECC       5.0
+#define PLAYER_AIR_DECC       1.0
 #define PLAYER_JUMP_IMPULSE   6.5
 #define PLAYER_PUNCH_IMPULSE  7.0
 #define PLAYER_PUNCH_ANGLE    1.2           // radians
 
 #define PLAYER_WIDTH          0.4
 #define PLAYER_HEIGHT         0.4
-#define PLAYER_HITBOX_W       0.5
-#define PLAYER_HITBOX_H       0.5
+#define PLAYER_HITBOX_W       0.6
+#define PLAYER_HITBOX_H       0.6
 #define PLAYER_GROUND         0.21
-#define PLAYER_PUNCH          0.23
+#define PLAYER_PUNCH          0.25
 
 #define GRAVITY               10.0
 

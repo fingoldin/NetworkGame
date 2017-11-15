@@ -77,6 +77,7 @@ bool EventReceiver::OnEvent(const irr::SEvent& event)
 		   event.MouseInput.Event == irr::EMIE_LMOUSE_LEFT_UP) {
 			mouseData[EMB_LEFT] = event.MouseInput.isLeftPressed();
 			if(lp) lp->setInput(EI_PUNCH, mouseData[EMB_LEFT]);
+			Network::sendInputData();
 		}
 	}
 

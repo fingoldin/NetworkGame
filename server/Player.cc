@@ -23,6 +23,8 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
+	printf("%d, %d\n", id, (int)rightFacing);
+
 //	printf("%d\n", (int)inputs[EI_LEFT]);
 
 //	printf("dt: %f\n", dt);
@@ -110,7 +112,10 @@ void Player::update(ms_t time)
 		setY(y_pos + y_vel * dt);
 	//}
 
-	rightFacing = (x_vel >= 0.0);
+	if(x_vel > 0.0)
+		rightFacing = true;
+	else if(x_vel < 0.0)
+		rightFacing = false;
 
 	lastUpdateTime = time;
 
@@ -147,10 +152,15 @@ void Player::punchPlayer(Player *player)
 	else
 		x_col = x_pos - PLAYER_PUNCH;
 
+	double m = 1.0;
+
+	if(!rightFacing)
+		m = -1.0;
+
 	if(player->inHitbox(x_col, y_col)) {
 		double f = atan((player->getY() - y_pos) / (player->getX() - x_pos)) + PLAYER_PUNCH_ANGLE;
 
-		player->applyImpulse(PLAYER_PUNCH_IMPULSE * cos(f), PLAYER_PUNCH_IMPULSE * sin(f));
+		player->applyImpulse(m * PLAYER_PUNCH_IMPULSE * cos(f), PLAYER_PUNCH_IMPULSE * sin(f));
 	}
 }
 

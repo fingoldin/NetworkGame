@@ -57,7 +57,7 @@
 #define PLAYER_DECC           40.0
 #define PLAYER_AIR_SPEED      6.0
 #define PLAYER_AIR_ACC        16.0
-#define PLAYER_AIR_DECC       5.0
+#define PLAYER_AIR_DECC       1.0
 #define PLAYER_JUMP_IMPULSE   6.5
 
 #define PLAYER_GROUND         0.21
