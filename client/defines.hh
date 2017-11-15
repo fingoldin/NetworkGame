@@ -3,8 +3,8 @@
 #include <stdint.h>
 
 #define CORE_ANTI_ALIAS       2
-#define CORE_WINDOW_WIDTH     640
-#define CORE_WINDOW_HEIGHT    480
+#define CORE_WINDOW_WIDTH     1280
+#define CORE_WINDOW_HEIGHT    720
 #define CORE_FULLSCREEN       false
 #define CORE_VSYNC            false
 
@@ -34,7 +34,7 @@
 
 #define SEND_ALL_TIME         500        // milliseconds
 
-#define METERS_TO_PIXELS      800.0
+//#define METERS_TO_PIXELS      800.0
 
 #define GUI_PAD               5
 #define GUI_WIDTH             100
@@ -44,7 +44,7 @@
 #define CONNECT_BOX_ID        42
 #define DISCONNECT_BOX_ID     43
 
-#define VIEWPORT_MAX          10.0
+#define VIEWPORT_MAX          20.0
 
 #define PLAYER_HEIGHT         0.4
 #define PLAYER_WIDTH          0.4
