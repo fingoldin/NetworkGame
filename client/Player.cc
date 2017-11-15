@@ -4,7 +4,7 @@
 
 #include "Camera.hh"
 
-Player::Player(NodeManager *manager, playid_t id) : CNode(manager), id(id), lastUpdateTime(0), x_vel(0.0), y_vel(0.0), lastJump(false)
+Player::Player(NodeManager *manager, playid_t id) : CNode(manager), id(id), lastUpdateTime(0), x_vel(0.0), y_vel(0.0), lastJump(false), packetSince(false)
 {
 	visible = true;
 	box.set(PLAYER_WIDTH, PLAYER_HEIGHT);
@@ -24,7 +24,7 @@ void Player::update(ms_t time)
 
 	printf("dt: %f\n", dt);
 
-        //if((time - spawnTime) > IMMUNE_TIME) {
+        if(!packetSince) {
                 double speed = PLAYER_SPEED;
                 double acc = PLAYER_ACC;
                 double decc = PLAYER_DECC;
@@ -90,7 +90,9 @@ void Player::update(ms_t time)
 
                 pos.X += x_vel * dt;
                 pos.Y += y_vel * dt;
-        //}
+        }
+
+	packetSince = false;
 
 	lastUpdateTime = time;
 }

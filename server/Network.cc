@@ -447,9 +447,9 @@ void Network::sendData()
 
 			uint8_t inputs = 0;
 
-        		for(int i = 0; i < EI_COUNT; i++) {
+        		for(int j = 0; j < EI_COUNT; j++) {
                 		inputs <<= 1;
-                		inputs |= (uint8_t)players[i]->getInput((E_INPUT)i);
+                		inputs |= (uint8_t)players[i]->getInput((E_INPUT)j);
         		}
 
 			pack(buf + s_len, "HCdddd", players[i]->getID(), inputs, players[i]->getX(), players[i]->getY(), players[i]->getXVel(), players[i]->getYVel());

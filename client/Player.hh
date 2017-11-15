@@ -22,6 +22,8 @@ public:
 	inline void setXVel(irr::f32 s) { x_vel = s; }
 	inline void setYVel(irr::f32 s) { y_vel = s; }
 
+	inline void setPacketSince(bool s) { packetSince = s; }
+
 	inline playid_t getID() const { return id; }
 //	inline ip_t getIP() const { return ip; }
 //	inline void setIP(ip_t i) { ip = i; }
@@ -49,4 +51,5 @@ protected:
 	irr::f32 x_vel, y_vel;
 
 	bool lastJump;
+	bool packetSince;
 };

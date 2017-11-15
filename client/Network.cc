@@ -516,6 +516,8 @@ void Network::playerUpdate(playid_t pid, uint8_t inputs, double x, double y, dou
 
 		p->setXVel(xv);
 		p->setYVel(yv);
+
+		p->setPacketSince(true);
 	}
 
 	//printf("Player update: %d %f %f\n", pid, x, y);
