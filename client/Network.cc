@@ -532,8 +532,7 @@ void Network::playerUpdate(playid_t pid, uint8_t inputs, double x, double y, dou
                 	}
 		}
 
-		p->setXVel(xv);
-		p->setYVel(yv);
+		p->setVel(irr::core::position2d<irr::f32>((irr::f32)xv, (irr::f32)yv));
 
 		p->setPacketSince(true);
 	}

@@ -23,7 +23,7 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
-	printf("%d, %d\n", id, (int)rightFacing);
+//	printf("%d, %d\n", id, (int)rightFacing);
 
 //	printf("%d\n", (int)inputs[EI_LEFT]);
 

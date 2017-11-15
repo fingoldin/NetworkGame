@@ -19,12 +19,18 @@ public:
 
 	inline void setInput(E_INPUT input, bool s) { inputs[input] = s; }
 
-	inline void setXVel(irr::f32 s) { x_vel = s; }
-	inline void setYVel(irr::f32 s) { y_vel = s; }
+	inline void setVel(const irr::core::position2d<irr::f32>& v) { vel = v; }
 
 	inline void setPacketSince(bool s) { packetSince = s; }
 
 	inline playid_t getID() const { return id; }
+
+	void punchPlayer(Player *player);
+
+	bool inHitbox(const irr::core::position2d<irr::f32>& p);
+
+	void applyImpulse(const irr::core::position2d<irr::f32>& i);
+
 //	inline ip_t getIP() const { return ip; }
 //	inline void setIP(ip_t i) { ip = i; }
 
@@ -39,6 +45,7 @@ protected:
 	Platform *onGround();
 
 	bool inputs[EI_COUNT];
+	bool lastInputs[EI_COUNT];
 
 	playid_t id;
 //	ip_t ip;
@@ -48,8 +55,12 @@ protected:
 
 	ms_t lastUpdateTime;
 
-	irr::f32 x_vel, y_vel;
+	irr::core::position2d<irr::f32> vel;
+
+	irr::core::dimension2d<irr::f32> hitbox;
 
 	bool lastJump;
 	bool packetSince;
+
+	bool rightFacing;
 };

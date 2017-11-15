@@ -1,18 +1,25 @@
+#include <math.h>
+
 #include "Player.hh"
 
 #include "NodeManager.hh"
 
 #include "Camera.hh"
 
-Player::Player(NodeManager *manager, playid_t id) : CNode(manager), id(id), lastUpdateTime(0), x_vel(0.0), y_vel(0.0), lastJump(false), packetSince(false)
+Player::Player(NodeManager *manager, playid_t id) : CNode(manager), id(id), lastUpdateTime(0), packetSince(false), rightFacing(false)
 {
 	visible = true;
+
 	box.set(PLAYER_WIDTH, PLAYER_HEIGHT);
+	vel.set(0.0, 0.0);
+	hitbox.set(PLAYER_HITBOX_W, PLAYER_HITBOX_H);
 
 	//spawnTime = Timer::getMs();
 
-	for(int i = 0; i < EI_COUNT; i++)
+	for(int i = 0; i < EI_COUNT; i++) {
                 inputs[i] = false;
+		lastInputs[i] = false;
+	}
 }
 
 void Player::update(ms_t time)
@@ -20,16 +27,16 @@ void Player::update(ms_t time)
 	if(lastUpdateTime == 0)
 		lastUpdateTime = time;
 
-	double dt = 0.001 * (double)(time - lastUpdateTime);
+	irr::f32 dt = 0.001 * (irr::f32)(time - lastUpdateTime);
 
 //	printf("%d\n", (bool)inputs[EI_LEFT]);
 
 //	printf("dt: %f\n", dt);
 
         if(!packetSince) {
-                double speed = PLAYER_SPEED;
-                double acc = PLAYER_ACC;
-                double decc = PLAYER_DECC;
+                irr::f32 speed = PLAYER_SPEED;
+                irr::f32 acc = PLAYER_ACC;
+                irr::f32 decc = PLAYER_DECC;
 
                 Platform *plat;
 
@@ -40,7 +47,7 @@ void Player::update(ms_t time)
                         acc = PLAYER_AIR_ACC;
                         decc = PLAYER_AIR_DECC;
 
-                        y_vel -= dt * GRAVITY;
+                        vel.Y -= dt * GRAVITY;
                 }
                 else {
                         //printf("%d %d\n", (int)inputs[EI_JUMP], (int)lastJump);
@@ -51,52 +58,68 @@ void Player::update(ms_t time)
 
                                 plat = NULL;
 
-                                y_vel = PLAYER_JUMP_IMPULSE;
+                                vel.Y = PLAYER_JUMP_IMPULSE;
                         }
                         else {
-                                y_vel = 0.0;
+                                vel.Y = 0.0;
                                 pos.Y = plat->getPosition().Y + plat->getBox().Height / 2.0 + PLAYER_HEIGHT / 2.0;
                         }
                 }
 
                 bool moved = false;
 
-                if(inputs[EI_LEFT] && x_vel > -speed) {
-                        x_vel -= acc * dt;
+                if(inputs[EI_LEFT] && vel.X > -speed) {
+                        vel.X -= acc * dt;
 
                         moved = true;
 
-                        if(x_vel < -speed)
-                                x_vel = -speed;
+                        if(vel.X < -speed)
+                                vel.X = -speed;
                 }
 
-                if(inputs[EI_RIGHT] && x_vel < speed) {
-                        x_vel += acc * dt;
+                if(inputs[EI_RIGHT] && vel.X < speed) {
+                        vel.X += acc * dt;
 
                         moved = true;
 
-                        if(x_vel > speed)
-                                x_vel = speed;
+                        if(vel.X > speed)
+                                vel.X = speed;
                 }
 
-                if(!moved && x_vel != 0.0) {
-                        double sign = 1.0;
-                        if(x_vel < 0.0)
+                if(!moved && vel.X != 0.0) {
+                        irr::f32 sign = 1.0;
+                        if(vel.X < 0.0)
                                 sign = -1.0;
 
-                        x_vel -= sign * dt * decc;
+                        vel.X -= sign * dt * decc;
 
-                        if(x_vel * sign < 0.0)
-                                x_vel = 0.0;
+                        if(vel.X * sign < 0.0)
+                                vel.X = 0.0;
                 }
 
-                pos.X += x_vel * dt;
-                pos.Y += y_vel * dt;
+		if(manager && inputs[EI_PUNCH] && !lastInputs[EI_PUNCH]) {
+                        std::vector<Player*> players = manager->getPlayers();
+                        size_t l = players.size();
+
+                        for(size_t i = 0; i < l; i++)
+                                punchPlayer(players[i]);
+                }
+
+                pos.X += vel.X * dt;
+                pos.Y += vel.Y * dt;
         }
+
+	if(vel.X > 0.0)
+                rightFacing = true;
+        else if(vel.X < 0.0)
+                rightFacing = false;
 
 	packetSince = false;
 
 	lastUpdateTime = time;
+
+	for(int i = 0; i < EI_COUNT; i++)
+                lastInputs[i] = inputs[i];
 }
 
 void Player::render(irr::video::IVideoDriver *driver, Camera *camera)
@@ -119,7 +142,7 @@ void Player::render(irr::video::IVideoDriver *driver, Camera *camera)
 
 Platform *Player::onGround()
 {
-        if(manager && y_vel <= 0.0) {
+        if(manager && vel.Y <= 0.0) {
                 std::vector<Platform*> platforms = manager->getPlatforms();
                 size_t pl = platforms.size();
 
@@ -130,4 +153,47 @@ Platform *Player::onGround()
         }
 
         return NULL;
+}
+
+void Player::punchPlayer(Player *player)
+{
+        if(!player || player == this || !manager)
+                return;
+
+	irr::core::position2d<irr::f32> col;
+
+        col.Y = pos.Y;
+
+        if(rightFacing)
+                col.X = col.X + PLAYER_PUNCH;
+        else
+                col.X = col.X - PLAYER_PUNCH;
+
+       	irr::f32 m = 1.0;
+
+        if(!rightFacing)
+                m = -1.0;
+
+        if(player->inHitbox(col)) {
+                irr::f32 f = atan((player->getPosition().Y - pos.Y) / (player->getPosition().X - pos.X)) + PLAYER_PUNCH_ANGLE;
+
+		printf("Punched player locally\n");
+
+                player->applyImpulse(irr::core::position2d<irr::f32>(m * PLAYER_PUNCH_IMPULSE * cos(f), PLAYER_PUNCH_IMPULSE * sin(f)));
+        }
+}
+
+bool Player::inHitbox(const irr::core::position2d<irr::f32>& p)
+{
+        irr::f32 x1 = pos.X + hitbox.Width / 2.0;
+        irr::f32 y1 = pos.Y + hitbox.Height / 2.0;
+        irr::f32 x2 = pos.X - hitbox.Width / 2.0;
+        irr::f32 y2 = pos.Y - hitbox.Height / 2.0;
+
+        return (p.X < x1 && p.X > x2 && p.Y < y1 && p.Y > y2);
+}
+
+void Player::applyImpulse(const irr::core::position2d<irr::f32>& i)
+{
+	vel += i;
 }
