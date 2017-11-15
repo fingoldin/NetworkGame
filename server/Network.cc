@@ -137,6 +137,8 @@ void *Network::threadLoop(void *args)
 
 			Player *p = engine->getPlayerByID(id);
 
+//			printf("inputs in: %d\n", inputs);
+
 			if(p && p->getIP() == ip) {
 				for(int i = (EI_COUNT - 1); i >= 0; i--) {
 					p->setInput((E_INPUT)i, (bool)(inputs & 1));
@@ -216,7 +218,7 @@ void *Network::threadLoop(void *args)
 				strcpy((char*)(you_send_buf + ycs_len + i_len + 2 * b_l), map.c_str());
 				ys_buf_len += map.length();
 
-				printf("Special message len: %ld (%ld)\n", ys_buf_len, map.length());
+				//printf("Special message len: %ld (%ld)\n", ys_buf_len, map.length());
 
 				p->setLastSignalTime(time);
 			}
@@ -302,7 +304,7 @@ void *Network::threadLoop(void *args)
 		else if(r > -1)
 			printf("Unrecognized packet received: %s\n", (char*)buf);
 
-		if((time - last_players_send_time) > PLAYERS_SEND_TIME) {
+		if((time - last_players_send_time) > PLAYERS_SEND_ALL_TIME) {
 			last_players_send_time = time;
 
 			std::vector<Player*> players = engine->getPlayers();
@@ -451,6 +453,8 @@ void Network::sendData()
                 		inputs <<= 1;
                 		inputs |= (uint8_t)players[i]->getInput((E_INPUT)j);
         		}
+
+			//printf("inputs: %d\n", inputs);
 
 			pack(buf + s_len, "HCdddd", players[i]->getID(), inputs, players[i]->getX(), players[i]->getY(), players[i]->getXVel(), players[i]->getYVel());
 

@@ -1,9 +1,12 @@
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
+#ifndef _WINDOWS_
+	#include <unistd.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <sys/time.h>
+#endif
+
 #include <chrono>
 #include <algorithm>
 
@@ -20,7 +23,13 @@
 bool Network::socket_init = false;
 bool Network::thread_running = false;
 bool Network::thread_should_run = false;
-int Network::n_fd = 0;
+
+#ifdef _WINDOWS_
+	SOCKET Network::n_fd = 0;
+#else
+	int Network::n_fd = 0;
+#endif
+
 pthread_t Network::thread;
 Core *Network::core = NULL;
 bool Network::connected = false;
@@ -36,6 +45,15 @@ void Network::init(Core *co)
 	connected = false;
 	server_ip = 0;
 	memset(&thread, 0, sizeof(pthread_t));
+
+#ifdef _WINDOWS_
+	WSADATA wsa;
+
+	if(WSAStartup(MAKEWORD(2,2), &wsa) < 0) {
+		printf("Could not initalize winsock\n");
+		return;
+	}
+#endif
 
 	if((n_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         	printf("Error creating socket\n");
@@ -313,7 +331,7 @@ bool Network::sendPacket(ip_t ip, unsigned char *buf, size_t buf_len)
         dest_addr.sin_port = htons(SERVER_PORT);
         dest_addr.sin_addr.s_addr = ip;
 
-	printf("Send %s\n", buf);
+	//printf("Send %s\n", buf);
 
         return (sendto(n_fd, buf, buf_len, 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) > -1);
 }
@@ -553,6 +571,8 @@ void Network::sendInputData()
 		inputs <<= 1;
 		inputs |= (uint8_t)e->inputDown((E_INPUT)i);
 	}
+
+//	printf("input: %d\n", inputs);
 
 	pack(buf + m_len, "HC", p->getID(), inputs);
 

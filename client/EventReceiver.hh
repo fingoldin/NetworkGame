@@ -12,6 +12,8 @@ public:
 
 	bool keyDown(irr::EKEY_CODE code);
 
+	bool mouseDown(E_MOUSE_BUTTON but);
+
 	bool inputDown(E_INPUT input);
 
 	EventReceiver(class Core *core);
@@ -23,6 +25,7 @@ private:
 	void handleEvent(irr::EKEY_CODE key, bool prev, bool now);
 
 	bool keys[irr::KEY_KEY_CODES_COUNT];
+	bool mouseData[EMB_COUNT];
 
 	class Core *core;
 

@@ -23,6 +23,8 @@ public:
 	inline double getXVel() const { return x_vel; }
 	inline double getYVel() const { return y_vel; }
 
+	void applyImpulse(double x, double y);
+
 	void setX(double x);
         void setY(double y);
 
@@ -35,6 +37,10 @@ public:
 	void setLastSendTime(ms_t t) { if(t > lastSendTime) lastSendTime = t; }
         inline ms_t getLastSendTime() const { return lastSendTime; }
 
+	void punchPlayer(Player *player);
+
+	bool inHitbox(double x, double y);
+
 //	const E_ANIM getAnim() { return anim; }
 //	const double getAnimPos() { return animPos; }
 
@@ -46,6 +52,7 @@ protected:
 	Platform *onGround();
 
 	bool inputs[EI_COUNT];
+	bool lastInputs[EI_COUNT];
 
 	class Engine *eng;
 
@@ -55,7 +62,7 @@ protected:
 //	E_ANIM anim;
 //	double animPos;
 
-	double x_pos, y_pos, x_vel, y_vel;
+	double x_pos, y_pos, x_vel, y_vel, hitboxW, hitboxH;
 
 	bool changed;
 
@@ -64,5 +71,5 @@ protected:
 	ms_t lastSendTime;
 //	ms_t spawnTime;
 
-	bool lastJump;
+	bool rightFacing;
 };

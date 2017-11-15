@@ -22,6 +22,8 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
+//	printf("%d\n", (bool)inputs[EI_LEFT]);
+
 //	printf("dt: %f\n", dt);
 
         if(!packetSince) {

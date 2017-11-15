@@ -6,8 +6,7 @@
 #define CORE_WINDOW_WIDTH     1280
 #define CORE_WINDOW_HEIGHT    720
 #define CORE_FULLSCREEN       false
-#define CORE_VSYNC            false
-
+#define CORE_VSYNC            true
 
 #define SERVER_PORT           1024
 #define CLIENT_PORT           1056
@@ -73,5 +72,11 @@ enum E_INPUT {
 	EI_LEFT = 0,
 	EI_RIGHT,
 	EI_JUMP,
+	EI_PUNCH,
 	EI_COUNT
+};
+
+enum E_MOUSE_BUTTON {
+	EMB_LEFT = 0,
+	EMB_COUNT
 };

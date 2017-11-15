@@ -9,19 +9,19 @@
 
 bool EventReceiver::OnEvent(const irr::SEvent& event)
 {
+	Player *lp = NULL;
+        if(core) {
+                NodeManager *m = core->getNodeManager();
+
+                if(m)
+                        lp = m->getLocalPlayer();
+        }
+
 	if(event.EventType == irr::EET_KEY_INPUT_EVENT) {
 		bool prev = keys[event.KeyInput.Key];
 		bool pressed = event.KeyInput.PressedDown;
 
 		keys[event.KeyInput.Key] = pressed;
-
-		Player *lp = NULL;
-		if(core) {
-			NodeManager *m = core->getNodeManager();
-
-			if(m)
-				lp = m->getLocalPlayer();
-		}
 
 		if(prev != pressed) {
 			switch(event.KeyInput.Key)
@@ -72,6 +72,13 @@ bool EventReceiver::OnEvent(const irr::SEvent& event)
                         break;
                 };
         }
+	else if(event.EventType == irr::EET_MOUSE_INPUT_EVENT) {
+		if(event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN ||
+		   event.MouseInput.Event == irr::EMIE_LMOUSE_LEFT_UP) {
+			mouseData[EMB_LEFT] = event.MouseInput.isLeftPressed();
+			if(lp) lp->setInput(EI_PUNCH, mouseData[EMB_LEFT]);
+		}
+	}
 
         return false;
 }
@@ -95,7 +102,12 @@ bool EventReceiver::connect()
 
 bool EventReceiver::keyDown(irr::EKEY_CODE code)
 {
-	return this->keys[code];
+	return keys[code];
+}
+
+bool EventReceiver::mouseDown(E_MOUSE_BUTTON but)
+{
+	return mouseData[but];
 }
 
 bool EventReceiver::inputDown(E_INPUT input)
@@ -108,6 +120,8 @@ bool EventReceiver::inputDown(E_INPUT input)
 		return keyDown(irr::KEY_KEY_D);
 	case EI_JUMP:
 		return keyDown(irr::KEY_SPACE);
+	case EI_PUNCH:
+		return mouseDown(EMB_LEFT);
 	default:
 		return false;
 	};
@@ -116,7 +130,10 @@ bool EventReceiver::inputDown(E_INPUT input)
 EventReceiver::EventReceiver(Core *core) : core(core), edit_box(NULL), env(NULL)
 {
 	for(irr::u32 i = 0; i < irr::KEY_KEY_CODES_COUNT; i++)
-		this->keys[i] = false;
+		keys[i] = false;
+
+	for(int i = 0; i < EMB_COUNT; i++)
+		mouseData[i] = false;
 
 	env = core->getGUIEnvironment();
 

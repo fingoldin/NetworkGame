@@ -1,15 +1,19 @@
+#include <math.h>
+
 #include "Player.hh"
 
 #include "Engine.hh"
 
 #include "Timer.hh"
 
-Player::Player(Engine * eng, playid_t id, ip_t ip) : eng(eng), id(id), ip(ip), x_pos(0.0), y_pos(0.0), x_vel(0.0), y_vel(0.0), changed(true), lastUpdateTime(0), lastSignalTime(0), lastSendTime(0), lastJump(false)
+Player::Player(Engine * eng, playid_t id, ip_t ip) : eng(eng), id(id), ip(ip), x_pos(0.0), y_pos(0.0), x_vel(0.0), y_vel(0.0), hitboxW(PLAYER_HITBOX_W), hitboxH(PLAYER_HITBOX_H), changed(true), lastUpdateTime(0), lastSignalTime(0), lastSendTime(0), rightFacing(true)
 {
 	//spawnTime = Timer::getMs();
 
-	for(int i = 0; i < EI_COUNT; i++)
+	for(int i = 0; i < EI_COUNT; i++) {
 		inputs[i] = false;
+		lastInputs[i] = false;
+	}
 }
 
 void Player::update(ms_t time)
@@ -18,6 +22,8 @@ void Player::update(ms_t time)
 		lastUpdateTime = time;
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
+
+//	printf("%d\n", (int)inputs[EI_LEFT]);
 
 //	printf("dt: %f\n", dt);
 
@@ -44,7 +50,7 @@ void Player::update(ms_t time)
 		}
 		else {
 			//printf("%d %d\n", (int)inputs[EI_JUMP], (int)lastJump);
-			if(inputs[EI_JUMP] && !lastJump) {
+			if(inputs[EI_JUMP] && !lastInputs[EI_JUMP]) {
 				speed = PLAYER_AIR_SPEED;
                         	acc = PLAYER_AIR_ACC;
                         	decc = PLAYER_AIR_DECC;
@@ -90,13 +96,26 @@ void Player::update(ms_t time)
 				x_vel = 0.0;
 		}
 
+		if(eng && inputs[EI_PUNCH] && !lastInputs[EI_PUNCH]) {
+			std::vector<Player*> players = eng->getPlayers();
+			size_t l = players.size();
+
+			for(size_t i = 0; i < l; i++)
+				punchPlayer(players[i]);
+		}
+
+//		printf("%f %f\n", x_vel, y_vel);
+
 		setX(x_pos + x_vel * dt);
 		setY(y_pos + y_vel * dt);
 	//}
 
+	rightFacing = (x_vel >= 0.0);
+
 	lastUpdateTime = time;
 
-	lastJump = inputs[EI_JUMP];
+	for(int i = 0; i < EI_COUNT; i++)
+		lastInputs[i] = inputs[i];
 }
 
 Platform *Player::onGround()
@@ -114,6 +133,27 @@ Platform *Player::onGround()
 	return NULL;
 }
 
+void Player::punchPlayer(Player *player)
+{
+	if(!player || player == this || !eng)
+		return;
+
+	double x_col, y_col;
+
+	y_col = y_pos;
+
+	if(rightFacing)
+		x_col = x_pos + PLAYER_PUNCH;
+	else
+		x_col = x_pos - PLAYER_PUNCH;
+
+	if(player->inHitbox(x_col, y_col)) {
+		double f = atan((player->getY() - y_pos) / (player->getX() - x_pos)) + PLAYER_PUNCH_ANGLE;
+
+		player->applyImpulse(PLAYER_PUNCH_IMPULSE * cos(f), PLAYER_PUNCH_IMPULSE * sin(f));
+	}
+}
+
 void Player::setX(double x)
 {
 	if(x_pos != x)
@@ -128,4 +168,20 @@ void Player::setY(double y)
 		changed = true;
 
 	y_pos = y;
+}
+
+bool Player::inHitbox(double x, double y)
+{
+	double x1 = x_pos + hitboxW / 2.0;
+	double y1 = y_pos + hitboxH / 2.0;
+	double x2 = x_pos - hitboxW / 2.0;
+	double y2 = y_pos - hitboxH / 2.0;
+
+	return (x < x1 && x > x2 && y < y1 && y > y2);
+}
+
+void Player::applyImpulse(double x, double y)
+{
+	x_vel += x;
+	y_vel += y;
 }
