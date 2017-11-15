@@ -51,6 +51,8 @@
 
 #define MAP_DIR               "./maps/"
 
+#define PLATFORM_HEIGHT       0.1
+
 typedef unsigned long         ip_t;
 typedef uint16_t              playid_t;
 typedef unsigned long long    ms_t;

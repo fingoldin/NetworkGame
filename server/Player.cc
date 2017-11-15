@@ -16,7 +16,7 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
-	printf("dt: %f\n", dt);
+//	printf("dt: %f\n", dt);
 
 	/*if(inputs[EI_UP])
                 setY(y_pos + PLAYER_MOVE_SPEED * dt);
