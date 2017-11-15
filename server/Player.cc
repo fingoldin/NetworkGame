@@ -6,12 +6,15 @@
 
 Player::Player(Engine * eng, playid_t id, ip_t ip) : eng(eng), id(id), ip(ip), x_pos(0.0), y_pos(0.0), x_vel(0.0), y_vel(0.0), changed(true), lastUpdateTime(0), lastSignalTime(0), lastSendTime(0), lastJump(false)
 {
-	spawnTime = Timer::getMs();
+	//spawnTime = Timer::getMs();
+
+	for(int i = 0; i < EI_COUNT; i++)
+		inputs[i] = false;
 }
 
 void Player::update(ms_t time)
 {
-	if(lastUpdateTime == -1.0)
+	if(lastUpdateTime == 0)
 		lastUpdateTime = time;
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
@@ -23,7 +26,7 @@ void Player::update(ms_t time)
         if(inputs[EI_DOWN])
                 setY(y_pos - PLAYER_MOVE_SPEED * dt);*/
 
-	if((time - spawnTime) > IMMUNE_TIME) {
+	//if((time - spawnTime) > IMMUNE_TIME) {
 		double speed = PLAYER_SPEED;
 		double acc = PLAYER_ACC;
 		double decc = PLAYER_DECC;
@@ -41,7 +44,7 @@ void Player::update(ms_t time)
 		}
 		else {
 			//printf("%d %d\n", (int)inputs[EI_JUMP], (int)lastJump);
-			if(inputs[EI_JUMP] != lastJump) {
+			if(inputs[EI_JUMP] && !lastJump) {
 				speed = PLAYER_AIR_SPEED;
                         	acc = PLAYER_AIR_ACC;
                         	decc = PLAYER_AIR_DECC;
@@ -89,7 +92,7 @@ void Player::update(ms_t time)
 
 		setX(x_pos + x_vel * dt);
 		setY(y_pos + y_vel * dt);
-	}
+	//}
 
 	lastUpdateTime = time;
 
@@ -103,8 +106,8 @@ Platform *Player::onGround()
 		size_t pl = platforms.size();
 
 		for(size_t i = 0; i < pl; i++)
-			if(platforms[i]->isInside(x_pos - PLAYER_WIDTH / 2, y_pos - PLAYER_GROUND) ||
-			  platforms[i]->isInside(x_pos + PLAYER_WIDTH / 2, y_pos - PLAYER_GROUND))
+			if(platforms[i]->isInside(x_pos - PLAYER_WIDTH / 2.0, y_pos - PLAYER_GROUND) ||
+			  platforms[i]->isInside(x_pos + PLAYER_WIDTH / 2.0, y_pos - PLAYER_GROUND))
 				return platforms[i];
 	}
 

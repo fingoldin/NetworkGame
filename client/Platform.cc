@@ -26,3 +26,8 @@ void Platform::render(irr::video::IVideoDriver *driver, Camera *camera)
                 driver->draw2DRectangle(irr::video::SColor(255, 255, 255, 255), irr::core::rect<irr::s32>(x1, y1, x2, y2));
         }
 }
+
+bool Platform::isInside(const irr::core::position2d<irr::f32>& p)
+{
+        return (p.X < (pos.X + box.Width / 2.0) && p.X > (pos.X - box.Width / 2.0) && p.Y < (pos.Y + box.Height / 2.0) && p.Y > (pos.Y - box.Height / 2.0));
+}

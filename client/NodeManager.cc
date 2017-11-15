@@ -181,6 +181,32 @@ bool NodeManager::removePlayer(playid_t id)
 	return false;
 }
 
+void NodeManager::addPlatform(Platform *plat)
+{
+        addNode(plat);
+
+        platforms.push_back(plat);
+        plat->grab();
+}
+
+bool NodeManager::removePlatform(Platform *plat)
+{
+        size_t l = platforms.size();
+
+        for(size_t i = 0; i < l; i++) {
+                if(platforms[i] == plat) {
+                        removeNode(platforms[i]);
+
+                        platforms[i]->drop();
+                        platforms.erase(platforms.begin() + i);
+
+                        return true;
+                }
+        }
+
+        return false;
+}
+
 Player *NodeManager::getPlayerByID(playid_t id) const
 {
 	size_t l = players.size();
@@ -213,7 +239,7 @@ bool NodeManager::loadMap(const std::string& path)
 
 		printf("%f %f %f %f read\n", x, y, w, h);
 
-		addNode(new Platform(this, irr::core::position2d<irr::f32>(x, y), irr::core::dimension2d<irr::f32>(w, h)));
+		addPlatform(new Platform(this, irr::core::position2d<irr::f32>(x, y), irr::core::dimension2d<irr::f32>(w, h)));
 	}
 
 	return true;

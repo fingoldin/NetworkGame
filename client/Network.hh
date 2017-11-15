@@ -29,7 +29,7 @@ private:
 
 	static bool addPlayer(playid_t pid, bool owner);
 	static bool removePlayer(playid_t pid);
-	static void playerUpdate(playid_t pid, double x, double y);
+	static void playerUpdate(playid_t pid, uint8_t inputs, double x, double y, double xv, double yv);
 
 	static bool socket_init;
 	static bool thread_running;

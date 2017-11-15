@@ -422,7 +422,7 @@ void Network::sendData()
 	size_t s_len = strlen(UPDATE_SIG);
 	size_t id_len = 2;
         size_t b_len = 4;
-	size_t buf_len = s_len + id_len + 2 * b_len;
+	size_t buf_len = s_len + id_len + 1 + 4 * b_len;
 
 	unsigned char buf[buf_len];
 
@@ -445,7 +445,14 @@ void Network::sendData()
 
 			players[i]->setLastSendTime(time);
 
-			pack(buf + s_len, "Hdd", players[i]->getID(), players[i]->getX(), players[i]->getY());
+			uint8_t inputs = 0;
+
+        		for(int i = 0; i < EI_COUNT; i++) {
+                		inputs <<= 1;
+                		inputs |= (uint8_t)players[i]->getInput((E_INPUT)i);
+        		}
+
+			pack(buf + s_len, "HCdddd", players[i]->getID(), inputs, players[i]->getX(), players[i]->getY(), players[i]->getXVel(), players[i]->getYVel());
 
 			//printf("Sent update packet %d\n", players[i]->getID());
 

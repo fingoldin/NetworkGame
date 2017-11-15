@@ -14,10 +14,14 @@ public:
 	const playid_t getID() { return id; }
 	const ip_t getIP() { return ip; }
 
+	inline bool getInput(E_INPUT input) const { return inputs[input]; }
 	inline void setInput(E_INPUT input, bool state) { inputs[input] = state; }
 
 	inline double getX() const { return x_pos; }
 	inline double getY() const { return y_pos; }
+
+	inline double getXVel() const { return x_vel; }
+	inline double getYVel() const { return y_vel; }
 
 	void setX(double x);
         void setY(double y);
@@ -58,7 +62,7 @@ protected:
 	ms_t lastUpdateTime;
 	ms_t lastSignalTime;
 	ms_t lastSendTime;
-	ms_t spawnTime;
+//	ms_t spawnTime;
 
 	bool lastJump;
 };

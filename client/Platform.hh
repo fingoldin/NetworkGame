@@ -1,3 +1,5 @@
+#pragma once
+
 #include <irrlicht/irrlicht.h>
 
 #include "CNode.hh"
@@ -10,4 +12,6 @@ public:
 	void update(ms_t time) { }
 
 	void render(irr::video::IVideoDriver *driver, class Camera *camera);
+
+	bool isInside(const irr::core::position2d<irr::f32>& p);
 };

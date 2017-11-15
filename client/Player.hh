@@ -4,6 +4,7 @@
 
 #include "CNode.hh"
 #include "Camera.hh"
+#include "Platform.hh"
 
 #include "defines.hh"
 
@@ -15,6 +16,11 @@ public:
 	void update(ms_t time);
 
 	void render(irr::video::IVideoDriver *driver, Camera *camera);
+
+	inline void setInput(E_INPUT input, bool s) { inputs[input] = s; }
+
+	inline void setXVel(irr::f32 s) { x_vel = s; }
+	inline void setYVel(irr::f32 s) { y_vel = s; }
 
 	inline playid_t getID() const { return id; }
 //	inline ip_t getIP() const { return ip; }
@@ -28,6 +34,10 @@ public:
 
 protected:
 
+	Platform *onGround();
+
+	bool inputs[EI_COUNT];
+
 	playid_t id;
 //	ip_t ip;
 
@@ -35,4 +45,8 @@ protected:
 //	double animPos;
 
 	ms_t lastUpdateTime;
+
+	irr::f32 x_vel, y_vel;
+
+	bool lastJump;
 };

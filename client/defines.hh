@@ -53,6 +53,18 @@
 
 #define PLATFORM_HEIGHT       0.1
 
+#define PLAYER_SPEED          5.0
+#define PLAYER_ACC            20.0
+#define PLAYER_DECC           40.0
+#define PLAYER_AIR_SPEED      6.0
+#define PLAYER_AIR_ACC        16.0
+#define PLAYER_AIR_DECC       5.0
+#define PLAYER_JUMP_IMPULSE   6.5
+
+#define PLAYER_GROUND         0.21
+
+#define GRAVITY               10.0
+
 typedef unsigned long         ip_t;
 typedef uint16_t              playid_t;
 typedef unsigned long long    ms_t;

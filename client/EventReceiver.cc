@@ -4,6 +4,9 @@
 
 #include "Network.hh"
 
+#include "NodeManager.hh"
+#include "Player.hh"
+
 bool EventReceiver::OnEvent(const irr::SEvent& event)
 {
 	if(event.EventType == irr::EET_KEY_INPUT_EVENT) {
@@ -12,14 +15,29 @@ bool EventReceiver::OnEvent(const irr::SEvent& event)
 
 		keys[event.KeyInput.Key] = pressed;
 
+		Player *lp = NULL;
+		if(core) {
+			NodeManager *m = core->getNodeManager();
+
+			if(m)
+				lp = m->getLocalPlayer();
+		}
+
 		if(prev != pressed) {
 			switch(event.KeyInput.Key)
 			{
 			case irr::KEY_KEY_A:
-			case irr::KEY_KEY_D:
-			case irr::KEY_SPACE:
+				if(lp) lp->setInput(EI_LEFT, pressed);
 				Network::sendInputData();
-				break;
+                                break;
+			case irr::KEY_KEY_D:
+				if(lp) lp->setInput(EI_RIGHT, pressed);
+                                Network::sendInputData();
+                                break;
+			case irr::KEY_SPACE:
+				if(lp) lp->setInput(EI_JUMP, pressed);
+                                Network::sendInputData();
+                                break;
 			default:
 				break;
 			};

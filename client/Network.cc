@@ -139,7 +139,7 @@ void *Network::threadLoop(void *args)
 
 		if(ip == server_ip && port == SERVER_PORT)
 		{
-			if((size_t)r >= (s_len + id_len + 2 * b_len))
+			if((size_t)r >= (s_len + id_len + 1 + 4 * b_len))
 			{
 				if(strncmp((const char*)buf, UPDATE_SIG, s_len) == 0) {
 					//playid_t pid = *(playid_t*)&buf[s_len];
@@ -147,13 +147,14 @@ void *Network::threadLoop(void *args)
 					//n_block_t y = *(n_block_t*)&buf[s_len + id_len + b_len];
 
 					playid_t pid;
-					double x, y;
+					uint8_t inputs;
+					double x, y, xv, yv;
 
-					unpack(buf + s_len, "Hdd", &pid, &x, &y);
+					unpack(buf + s_len, "HCdddd", &pid, &inputs, &x, &y, &xv, &yv);
 
 					printf("update\n");
 
-					playerUpdate(pid, x, y);
+					playerUpdate(pid, inputs, x, y, xv, yv);
 
 					lastServerMesTime = Timer::getMs();
 
@@ -171,7 +172,7 @@ void *Network::threadLoop(void *args)
 				unpack(buf + cs_len, "Hdd", &pid, &x, &y);
 
                                	if(addPlayer(pid, false))
-	                               	playerUpdate(pid, (irr::f32)x, (irr::f32)y);
+	                               	playerUpdate(pid, 0, (irr::f32)x, (irr::f32)y, 0.0, 0.0);
 
 				lastServerMesTime = Timer::getMs();
 			}
@@ -365,7 +366,7 @@ std::string Network::connect(ip_t ip)
                                 unpack(buf + sig_l, "Hdd", &pid, &x, &y, map);
 
 				addPlayer(pid, true);
-				playerUpdate(pid, (irr::f32)x, (irr::f32)y);
+				playerUpdate(pid, 0, (irr::f32)x, (irr::f32)y, 0.0, 0.0);
 
 				if(initThread()) {
 					//playid_t pid = *(playid_t*)&buf[sig_l];
@@ -489,7 +490,7 @@ bool Network::removePlayer(playid_t pid)
 	return false;
 }
 
-void Network::playerUpdate(playid_t pid, double x, double y)
+void Network::playerUpdate(playid_t pid, uint8_t inputs, double x, double y, double xv, double yv)
 {
 	NodeManager *m = core->getNodeManager();
 
@@ -498,14 +499,23 @@ void Network::playerUpdate(playid_t pid, double x, double y)
 	if(m)
 		p = m->getPlayerByID(pid);
 
-        if(p)
-                p->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
-	else {
+	if(!p) {
 		addPlayer(pid, false);
-		Player *np = m->getPlayerByID(pid);
+		p = m->getPlayerByID(pid);
+	}
 
-		if(np)
-			np->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
+	if(p) {
+		p->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
+
+		if(inputs) {
+			for(int i = (EI_COUNT - 1); i >= 0; i--) {
+                		p->setInput((E_INPUT)i, (bool)(inputs & 1));
+                		inputs >>= 1;
+                	}
+		}
+
+		p->setXVel(xv);
+		p->setYVel(yv);
 	}
 
 	//printf("Player update: %d %f %f\n", pid, x, y);
