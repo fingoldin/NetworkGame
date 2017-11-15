@@ -152,7 +152,7 @@ void *Network::threadLoop(void *args)
 
 					unpack(buf + s_len, "HCdddd", &pid, &inputs, &x, &y, &xv, &yv);
 
-					printf("update\n");
+					//printf("update\n");
 
 					playerUpdate(pid, inputs, x, y, xv, yv);
 

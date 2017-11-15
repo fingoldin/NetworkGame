@@ -22,7 +22,7 @@ void Player::update(ms_t time)
 
 	double dt = 0.001 * (double)(time - lastUpdateTime);
 
-	printf("dt: %f\n", dt);
+//	printf("dt: %f\n", dt);
 
         if(!packetSince) {
                 double speed = PLAYER_SPEED;

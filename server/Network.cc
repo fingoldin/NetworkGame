@@ -128,7 +128,7 @@ void *Network::threadLoop(void *args)
 		if((size_t)r == (um_len + i_len + 1) && strncmp((const char*)buf, UPDATE_MES, um_len) == 0) {
 //			playid_t id = *(playid_t*)&buf[um_len];
 
-			printf("Update received\n");
+			//printf("Update received\n");
 
 			playid_t id;
 			uint8_t inputs;
@@ -146,7 +146,7 @@ void *Network::threadLoop(void *args)
 				p->setLastSignalTime(time);
 			}
 
-			printf("Update packet received\n");
+			//printf("Update packet received\n");
 		}
 		else if(((size_t)r == cm_len && strncmp((char*)buf, CONNECT_MES, cm_len) == 0) || ((size_t)r == (dm_len + i_len) && strncmp((char*)buf, DISCONNECT_MES, dm_len) == 0)) {
 			size_t s_buf_len = cs_len + i_len + 2 * b_l;
