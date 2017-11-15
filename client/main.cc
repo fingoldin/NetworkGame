@@ -1,5 +1,10 @@
 #include "Core.hh"
 
+#ifdef _WINDOWS_
+	#pragma comment(lib, "Irrlicht.lib")
+	#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#endif
+
 int main(int argc, char * argv[])
 {
 	Core core;
