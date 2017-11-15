@@ -507,7 +507,7 @@ void Network::playerUpdate(playid_t pid, uint8_t inputs, double x, double y, dou
 	if(p) {
 		p->setPosition(irr::core::position2d<irr::f32>((irr::f32)x, (irr::f32)y));
 
-		if(inputs) {
+		if(p != m->getLocalPlayer()) {
 			for(int i = (EI_COUNT - 1); i >= 0; i--) {
                 		p->setInput((E_INPUT)i, (bool)(inputs & 1));
                 		inputs >>= 1;
