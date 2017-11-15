@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef _WINDOWS_
+	#include <windows.h>
 	#include <winsock2.h>
 #endif
 
@@ -42,12 +43,12 @@ private:
 
 	static ip_t server_ip;
 
-	static pthread_t thread;
-
 #ifdef _WINDOWS_
 	SOCKET n_fd;
+	HANDLE thread;
 #else
 	static int n_fd;
+	static pthread_t thread;
 #endif
 
 	static class Core *core;

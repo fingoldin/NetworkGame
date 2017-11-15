@@ -1,4 +1,6 @@
-#ifndef _WINDOWS_
+#ifdef _WINDOWS_
+	#include <process.h>
+#else
 	#include <unistd.h>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
@@ -97,7 +99,11 @@ bool Network::initThread()
 
 	thread_should_run = true;
 
+#ifdef _WINDOWS_
+	if((thread = (HANDLE)_beginthread(threadLoop, 0, (void*)NULL)) == 0) {
+#else
 	if(pthread_create(&thread, NULL, threadLoop, (void*)NULL) != 0) {
+#endif
 		thread_should_run = false;
 
 		printf("Could not create network thread\n");
@@ -374,7 +380,6 @@ std::string Network::connect(ip_t ip)
 				temp[r - sig_l - i_len - 2 * b_l] = '\0';
 
                                 map += temp;
-                                map += ".map";
 
                                 free(temp);
 

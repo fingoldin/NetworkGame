@@ -36,7 +36,7 @@ public:
 	inline const std::vector<Player*>& getPlayers() const { return players; }
 	inline const std::vector<Platform*>& getPlatforms() const { return platforms; }
 
-	bool loadMap(const std::string& path);
+	bool loadMap(const std::string& name);
 
 private:
 

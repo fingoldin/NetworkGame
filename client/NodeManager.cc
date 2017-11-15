@@ -6,6 +6,8 @@
 
 #include "Platform.hh"
 
+#include "Maps.hh"
+
 NodeManager::NodeManager() : irr::IReferenceCounted()
 {
 	localPlayer = NULL;
@@ -147,6 +149,8 @@ bool NodeManager::addPlayer(playid_t pid, bool owner)
 		p->grab();
 	}
 
+	p->drop();
+
 	printf("Player added, id: %d  local: %d, total: %ld\n", pid, (int)owner, players.size());
 
 	return true;
@@ -218,28 +222,20 @@ Player *NodeManager::getPlayerByID(playid_t id) const
 	return NULL;
 }
 
-bool NodeManager::loadMap(const std::string& path)
+bool NodeManager::loadMap(const std::string& name)
 {
-	std::string p = std::string(MAP_DIR) + path;
-	std::ifstream infile(p.c_str());
+	Map *map = Maps::getMap(name);
 
-	if(!infile.is_open()) {
-		printf("Could not load map at path %s\n", p.c_str());
+	if(!map)
 		return false;
-	}
 
-	std::string line;
-	while (std::getline(infile, line))
-	{
-   		std::istringstream iss(line);
-    		irr::f32 x, y, w, h;
+	std::vector<platform_t> plats = map->getPlatforms();
+	size_t l = plats.size();
 
-    		if (!(iss >> x >> y >> w >> h))
-			break;
-
-		printf("%f %f %f %f read\n", x, y, w, h);
-
-		addPlatform(new Platform(this, irr::core::position2d<irr::f32>(x, y), irr::core::dimension2d<irr::f32>(w, h)));
+	for(size_t i = 0 ; i < l; i++) {
+		Platform *p = new Platform(this, irr::core::position2d<irr::f32>(plats[i].X, plats[i].Y), irr::core::dimension2d<irr::f32>(plats[i].W, plats[i].H));
+		addPlatform(p);
+		p->drop();
 	}
 
 	return true;

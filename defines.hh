@@ -13,11 +13,17 @@
 #define RECEIVE_TIMEOUT_S     2
 #define RECEIVE_TIMEOUT_US    0
 #define RECEIVE_LEN           256
+#define SEND_LEN              256
 
-#define USLEEP_TIME           10000      // microseconds
-#define CONNECT_TIMEOUT_TIME  4000       // milliseconds
-#define SERVER_TIMEOUT_TIME   4000       // milliseconds
-#define DISCONNECT_WAIT_TIME  400        // milliseconds
+#define USLEEP_TIME           10000      // ms
+#define CONNECT_TIMEOUT_TIME  4000       // ms
+#define SERVER_TIMEOUT_TIME   4000       // ms
+#define DISCONNECT_WAIT_TIME  400        // ms
+#define PLAYERS_SEND_TIME     1000       // ms
+#define PLAYER_TIMEOUT_TIME   4000       // ms
+#define PLAYER_SEND_TIME      700        // ms
+#define PLAYERS_SEND_ALL_TIME 800        // ms
+#define SEND_ALL_TIME         500        // ms
 
 #define CONNECT_SIG           "$N^n"
 #define YOU_CONNECT_SIG       "dfgg"
@@ -30,10 +36,6 @@
 #define DISCONNECT_MES_NUM    4
 #define CONNECT_MES           "7sdf"
 #define UPDATE_MES            "sdf2"
-
-#define SEND_ALL_TIME         500        // milliseconds
-
-//#define METERS_TO_PIXELS      800.0
 
 #define GUI_PAD               5
 #define GUI_WIDTH             100
@@ -55,6 +57,9 @@
 #define MAP_DIR               "./maps/"
 
 #define PLATFORM_HEIGHT       0.1
+
+#define START_X               0.0
+#define START_Y               2.0
 
 #define PLAYER_SPEED          5.0
 #define PLAYER_ACC            20.0

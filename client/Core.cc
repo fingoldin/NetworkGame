@@ -8,8 +8,8 @@
 #include "defines.hh"
 
 #include "Network.hh"
-
 #include "Timer.hh"
+#include "Maps.hh"
 
 Core::Core() : irr::IReferenceCounted()
 {
@@ -27,6 +27,7 @@ void Core::begin(const char * winName)
         init_device(winName);
 
 	Timer::init();
+	Maps::init();
 }
 
 void Core::end(void)
@@ -39,6 +40,8 @@ void Core::end(void)
 		camera->drop();
 	if(device)
                 device->drop();
+
+	Maps::end();
 }
 
 bool Core::run(void)

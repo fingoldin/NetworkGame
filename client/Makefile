@@ -4,5 +4,7 @@ CFLAGS = -Wall
 
 LDFLAGS = -lm -lpthread -lIrrlicht -lGL -lX11 -lXxf86vm
 
-main: *.cc *.hh
-	$(CXX) $(CFLAGS) *.cc -o $@ $(LDFLAGS)
+INCLUDES = ../
+
+main: *.cc *.hh ../defines.hh
+	$(CXX) $(CFLAGS) -I $(INCLUDES) *.cc -o $@ $(LDFLAGS)

@@ -137,7 +137,7 @@ void *Network::threadLoop(void *args)
 
 			Player *p = engine->getPlayerByID(id);
 
-			printf("Player %d inputs in: %d\n", id, inputs);
+//			printf("Player %d inputs in: %d\n", id, inputs);
 
 			if(p && p->getIP() == ip) {
 				for(int i = (EI_COUNT - 1); i >= 0; i--) {
