@@ -62,8 +62,8 @@
 #define START_Y               2.0
 
 #define PLAYER_SPEED          5.0
-#define PLAYER_ACC            20.0
-#define PLAYER_DECC           40.0
+#define PLAYER_ACC            60.0
+#define PLAYER_DECC           80.0
 #define PLAYER_AIR_SPEED      6.0
 #define PLAYER_AIR_ACC        16.0
 #define PLAYER_AIR_DECC       1.0

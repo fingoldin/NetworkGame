@@ -22,6 +22,8 @@ int main(int argc, char * argv[])
 			core.update();
 
 			core.render();
+
+			core.yield();
 		}
 		else {
 			core.yield();
