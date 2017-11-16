@@ -337,7 +337,7 @@ bool Network::sendPacket(ip_t ip, unsigned char *buf, size_t buf_len)
         dest_addr.sin_port = htons(SERVER_PORT);
         dest_addr.sin_addr.s_addr = ip;
 
-	//printf("Send %s\n", buf);
+	printf("Send %s\n", buf);
 
         return (sendto(n_fd, buf, buf_len, 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) > -1);
 }

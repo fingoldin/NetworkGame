@@ -23,7 +23,7 @@
 #define PLAYER_TIMEOUT_TIME   4000       // ms
 #define PLAYER_SEND_TIME      700        // ms
 #define PLAYERS_SEND_ALL_TIME 800        // ms
-#define SEND_ALL_TIME         500        // ms
+#define SEND_ALL_TIME         30        // ms
 
 #define CONNECT_SIG           "$N^n"
 #define YOU_CONNECT_SIG       "dfgg"
