@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 #define CORE_ANTI_ALIAS       2
-#define CORE_WINDOW_WIDTH     1280
-#define CORE_WINDOW_HEIGHT    720
-#define CORE_FULLSCREEN       false
+#define CORE_WINDOW_WIDTH     1920
+#define CORE_WINDOW_HEIGHT    1080
+#define CORE_FULLSCREEN       true
 #define CORE_VSYNC            true
 
 #define SERVER_PORT           1024
@@ -47,12 +47,12 @@
 
 #define VIEWPORT_MAX          20.0
 
-#define PLAYER_HEIGHT         0.4
-#define PLAYER_WIDTH          0.4
-#define PLAYER_HITBOX_W       0.6
-#define PLAYER_HITBOX_H       0.6
-#define PLAYER_GROUND         0.21
-#define PLAYER_PUNCH          0.25
+#define PLAYER_HEIGHT         0.7
+#define PLAYER_WIDTH          0.7
+#define PLAYER_HITBOX_W       1.0
+#define PLAYER_HITBOX_H       1.0
+#define PLAYER_GROUND         0.37
+#define PLAYER_PUNCH          0.40
 
 #define MAP_DIR               "./maps/"
 

@@ -14,9 +14,15 @@ void Maps::init()
 
 	Map *m1 = new Map("map1");
 
+//	int n = 100;
+
 	m1->addPlatform(0.0, 0.0, 5.0, 1.0);
 	m1->addPlatform(4.0, -2.0, 5.0, 1.0);
 	m1->addPlatform(-4.0, -2.0, 5.0, 1.0);
+
+//	for(int i = 0; i < n; i++)
+//		for(int j = 0; j < n; j++)
+//			m1->addPlatform(-(double)n + 2.0 * (double)i, -2.0 * (double)n + 4.0 * (double)i, 5.0, 1.0);
 
 	maps.push_back(m1);
 }

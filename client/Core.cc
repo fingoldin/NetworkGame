@@ -114,3 +114,4 @@ void Core::init_device(const char * winName)
 
 	Network::init(this);
 }
+
