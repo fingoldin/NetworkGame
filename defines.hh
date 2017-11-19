@@ -5,7 +5,7 @@
 #define CORE_ANTI_ALIAS       2
 #define CORE_WINDOW_WIDTH     1920
 #define CORE_WINDOW_HEIGHT    1080
-#define CORE_FULLSCREEN       true
+#define CORE_FULLSCREEN       false
 #define CORE_VSYNC            true
 
 #define SERVER_PORT           1024
